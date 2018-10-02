@@ -17,8 +17,13 @@ class CoinzHome : AppCompatActivity() {
 
         var tally = 0
 
-        fab.setOnClickListener { view ->
+        upvote.setOnClickListener { view ->
             tally++
+            Snackbar.make(view, "Button pressed $tally times", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show()
+        }
+        downvote.setOnClickListener { view ->
+            tally--
             Snackbar.make(view, "Button pressed $tally times", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show()
         }
