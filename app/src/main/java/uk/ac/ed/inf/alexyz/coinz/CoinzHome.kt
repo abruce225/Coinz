@@ -7,6 +7,7 @@ import android.view.Menu
 import android.view.MenuItem
 
 import kotlinx.android.synthetic.main.activity_coinz_home.*
+import kotlinx.android.synthetic.main.content_coinz_home.*
 
 class CoinzHome : AppCompatActivity() {
 
@@ -19,12 +20,14 @@ class CoinzHome : AppCompatActivity() {
 
         upvote.setOnClickListener { view ->
             tally++
-            Snackbar.make(view, "Button pressed $tally times", Snackbar.LENGTH_LONG)
+            TallyValue.text = tally.toString()
+            Snackbar.make(view, "I'm glad you liked it!", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show()
         }
         downvote.setOnClickListener { view ->
             tally--
-            Snackbar.make(view, "Button pressed $tally times", Snackbar.LENGTH_LONG)
+            TallyValue.text = tally.toString()
+            Snackbar.make(view, "Sorry you didn't like our service.", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show()
         }
     }
