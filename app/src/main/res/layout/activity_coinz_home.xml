@@ -32,7 +32,7 @@
         android:layout_margin="@dimen/fab_margin"
         app:layout_anchor="@+id/include"
         app:layout_anchorGravity="left|center"
-        app:srcCompat="@android:drawable/arrow_down_float" />
+        app:srcCompat="@drawable/ic_downvote_thumb" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/upvote"
@@ -42,6 +42,6 @@
         android:layout_margin="@dimen/fab_margin"
         app:layout_anchor="@+id/include"
         app:layout_anchorGravity="right|center"
-        app:srcCompat="@+drawable/upvotethumb.png" />
+        app:srcCompat="@drawable/ic_upvote_thumb" />
 
 </android.support.design.widget.CoordinatorLayout>
