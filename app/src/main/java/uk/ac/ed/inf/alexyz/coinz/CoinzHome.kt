@@ -5,9 +5,12 @@ import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
+import android.content.Intent
 
 import kotlinx.android.synthetic.main.activity_coinz_home.*
 import kotlinx.android.synthetic.main.content_coinz_home.*
+
+import org.jetbrains.anko.toast
 
 class CoinzHome : AppCompatActivity() {
 
@@ -29,6 +32,12 @@ class CoinzHome : AppCompatActivity() {
             TallyValue.text = tally.toString()
             Snackbar.make(view, "Sorry you didn't like our service.", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show()
+        }
+
+        secondAct.setOnClickListener { view ->
+            toast("Into the breach!")
+            val intent1 = Intent (this, QuickBounce :: class.java)
+            startActivity (intent1)
         }
     }
 
