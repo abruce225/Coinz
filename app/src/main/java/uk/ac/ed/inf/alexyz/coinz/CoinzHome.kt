@@ -37,6 +37,7 @@ class CoinzHome : AppCompatActivity() {
         secondAct.setOnClickListener { view ->
             toast("Into the breach!")
             val intent1 = Intent (this, QuickBounce :: class.java)
+            intent1.putExtra(QuickBounce.COUNT, tally)
             startActivity (intent1)
         }
     }
