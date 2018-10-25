@@ -19,27 +19,12 @@ class CoinzHome : AppCompatActivity() {
         setContentView(R.layout.activity_coinz_home)
         setSupportActionBar(toolbar)
 
-        var tally = 0
-
-        upvote.setOnClickListener { view ->
-            tally++
-            TallyValue.text = tally.toString()
-            Snackbar.make(view, "I'm glad you liked it!", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show()
-        }
-        downvote.setOnClickListener { view ->
-            tally--
-            TallyValue.text = tally.toString()
-            Snackbar.make(view, "Sorry you didn't like our service.", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show()
+        playButton.setOnClickListener { view ->
+            toast("I'm working!")
+            val mapboxintent = Intent(this, MapBoxMain::class.java)
+            startActivity(mapboxintent)
         }
 
-        secondAct.setOnClickListener { view ->
-            toast("Into the breach!")
-            val intent1 = Intent (this, QuickBounce :: class.java)
-            intent1.putExtra(QuickBounce.COUNT, tally)
-            startActivity (intent1)
-        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
