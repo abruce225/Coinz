@@ -6,26 +6,55 @@ import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.content.Intent
+import android.os.AsyncTask
 
 import kotlinx.android.synthetic.main.activity_coinz_home.*
 import kotlinx.android.synthetic.main.content_coinz_home.*
+import java.util.*
+
+import com.github.kittinunf.fuel.httpGet
+import com.github.kittinunf.result.Result
+import com.github.kittinunf.result.getAs
+
 
 import org.jetbrains.anko.toast
+import java.text.SimpleDateFormat
 
 class CoinzHome : AppCompatActivity() {
 
+    private val tag = "CoinzHome"
+
+    private var downloadDate = "yyyy/MM/dd"
+
+    private val preferencesFile = "MyPrefsFile"
+
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_coinz_home)
         setSupportActionBar(toolbar)
+        val sdf = SimpleDateFormat("yyyy/MM/dd")
+        val currentDate = sdf.format(Date()) + "/coinzmap.geojson"
+        val todaysURL = ("http://homepages.inf.ed.ac.uk/stg/coinz/$currentDate")
+        todaysURL.httpGet().responseString(){request,response,result->
+            when(result){
+                is Result.Success -> {
+                    toast("Todays map downloaded successfully!")
+                    result.get()
+                }
+                is Result.Failure -> {toast("Failed to download today's map.")}
+            }
+        }
 
         playButton.setOnClickListener { view ->
-            toast("I'm working!")
+            toast(todaysURL)
             val mapboxintent = Intent(this, MapBoxMain::class.java)
             startActivity(mapboxintent)
         }
 
     }
+
+    
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.

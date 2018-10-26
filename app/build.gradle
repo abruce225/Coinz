@@ -38,6 +38,9 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     implementation "org.jetbrains.anko:anko-common:0.10.7"
 
+    //fuel
+    implementation 'com.github.kittinunf.fuel:fuel-android:1.15.1'
+
     //mapbox
     implementation 'com.mapbox.mapboxsdk:mapbox-android-sdk:6.0.1'
     implementation 'com.mapbox.mapboxsdk:mapbox-android-plugin-locationlayer:0.5.0'
