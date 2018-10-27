@@ -18,6 +18,8 @@ import com.github.kittinunf.result.getAs
 
 
 import org.jetbrains.anko.toast
+import java.io.File
+import java.io.PrintStream
 import java.text.SimpleDateFormat
 
 class CoinzHome : AppCompatActivity() {
@@ -26,6 +28,8 @@ class CoinzHome : AppCompatActivity() {
 
     private var downloadDate = "yyyy/MM/dd"
 
+    private lateinit var tempFile: String
+
     private val preferencesFile = "MyPrefsFile"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,6 +37,21 @@ class CoinzHome : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_coinz_home)
         setSupportActionBar(toolbar)
+        val todaysURL = getGeoJSON()
+        playButton.setOnClickListener { view ->
+            if (tempFile == null){
+                toast("You haven't got the map for today yet!")
+            }else {
+                toast(todaysURL)
+                val mapboxintent =  Intent(this, MapBoxMain::class.java)
+                mapboxintent.putExtra("GEOJSON", tempFile)
+                startActivity(mapboxintent)
+            }
+        }
+
+    }
+
+    private fun getGeoJSON(): String{
         val sdf = SimpleDateFormat("yyyy/MM/dd")
         val currentDate = sdf.format(Date()) + "/coinzmap.geojson"
         val todaysURL = ("http://homepages.inf.ed.ac.uk/stg/coinz/$currentDate")
@@ -40,21 +59,13 @@ class CoinzHome : AppCompatActivity() {
             when(result){
                 is Result.Success -> {
                     toast("Todays map downloaded successfully!")
-                    result.get()
+                    tempFile = result.get()
                 }
                 is Result.Failure -> {toast("Failed to download today's map.")}
             }
         }
-
-        playButton.setOnClickListener { view ->
-            toast(todaysURL)
-            val mapboxintent = Intent(this, MapBoxMain::class.java)
-            startActivity(mapboxintent)
-        }
-
+        return todaysURL
     }
-
-    
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.

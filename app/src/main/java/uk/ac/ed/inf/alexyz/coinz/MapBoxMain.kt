@@ -26,11 +26,15 @@ import org.jetbrains.anko.toast
 
 class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListener {
 
+    companion object {
+        const val GEOJSON = "GEOJSON"
+    }
 
     private lateinit var mapView: MapView
     private lateinit var map: MapboxMap
     private lateinit var permissionManager: PermissionsManager
     private lateinit var originLocation: Location
+    private lateinit var todayGJS: String
 
     private var locationEngine: LocationEngine? = null
     private var locationLayerPlugin: LocationLayerPlugin? = null
@@ -38,6 +42,10 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map_box_main)
+
+        todayGJS = intent.getStringExtra(GEOJSON)
+        toast(todayGJS)
+
         setSupportActionBar(toolbar)
         Mapbox.getInstance(applicationContext, getString(R.string.access_token))
         mapView = findViewById(R.id.mapView)
@@ -46,6 +54,11 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
             map = mapboxMap
             enableLocation()
         }
+        dropPins()
+    }
+
+    private fun dropPins(){
+
     }
 
     fun enableLocation(){
