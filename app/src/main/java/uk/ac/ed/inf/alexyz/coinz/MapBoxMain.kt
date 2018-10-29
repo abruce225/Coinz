@@ -5,6 +5,8 @@ import android.location.Location
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity;
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.mapbox.android.core.location.LocationEngine
 import com.mapbox.android.core.location.LocationEngineListener
 import com.mapbox.android.core.location.LocationEnginePriority
@@ -12,6 +14,9 @@ import com.mapbox.android.core.location.LocationEngineProvider
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.mapboxsdk.Mapbox
+import com.mapbox.mapboxsdk.annotations.Icon
+import com.mapbox.mapboxsdk.annotations.IconFactory
+import com.mapbox.mapboxsdk.annotations.MarkerOptions
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.MapView
@@ -19,10 +24,16 @@ import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.CameraMode
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.RenderMode
+import com.mapbox.mapboxsdk.annotations.Marker
 
 import kotlinx.android.synthetic.main.activity_map_box_main.*
+import kotlinx.android.synthetic.main.content_map_box_main.*
 import java.security.Permission
 import org.jetbrains.anko.toast
+import org.json.JSONArray
+import org.json.JSONObject
+import uk.ac.ed.inf.alexyz.coinz.R.drawable.*
+
 
 class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListener {
 
@@ -44,7 +55,6 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
         setContentView(R.layout.activity_map_box_main)
 
         todayGJS = intent.getStringExtra(GEOJSON)
-        toast(todayGJS)
 
         setSupportActionBar(toolbar)
         Mapbox.getInstance(applicationContext, getString(R.string.access_token))
@@ -53,12 +63,42 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
         mapView.getMapAsync{ mapboxMap ->
             map = mapboxMap
             enableLocation()
+            dropPins(todayGJS)
         }
-        dropPins()
+
     }
 
-    private fun dropPins(){
+    private fun dropPins(todayGJS:String){
+        val json: JSONObject = JSONObject(todayGJS)
+        val features: JSONArray = json.getJSONArray("features")
+        val featuresCount = features.length() - 1
+        for (i in 0..featuresCount){
+            val feature: JSONObject = features.getJSONObject(i)
+            val properties: JSONObject = feature.getJSONObject("properties")
+            val id: String = properties.getString("id")
+            val value: Double = properties.getDouble("value")
+            val currency: String = properties.getString("currency")
+            val markerS: Int = properties.getInt("marker-symbol")
+            val markerC: String = properties.getString("marker-color")
+            val geometry: JSONObject = feature.getJSONObject("geometry")
+            val holder: JSONArray = geometry.getJSONArray("coordinates")
+            val longitude: Double = holder.getDouble(0)
+            val latitude: Double = holder.getDouble(1)
+            val coinLatLng: LatLng = LatLng(latitude,longitude)
+            when {
+                currency.equals("PENY") ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_marker_15red)
+                                        this.map.addMarker(MarkerOptions().position(coinLatLng).icon(myIcon))}
 
+                currency.equals("SHIL") ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_marker_15blue)
+                                        this.map.addMarker(MarkerOptions().position(coinLatLng).icon(myIcon))}
+
+                currency.equals("QUID") ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_marker_15yellow)
+                                        this.map.addMarker(MarkerOptions().position(coinLatLng).icon(myIcon))}
+
+                currency.equals("DOLR") ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_marker_15green)
+                                        this.map.addMarker(MarkerOptions().position(coinLatLng).icon(myIcon))}
+            }
+        }
     }
 
     fun enableLocation(){

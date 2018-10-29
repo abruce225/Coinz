@@ -15,6 +15,7 @@ import java.util.*
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.getAs
+import okhttp3.OkHttpClient
 
 
 import org.jetbrains.anko.toast
@@ -42,7 +43,6 @@ class CoinzHome : AppCompatActivity() {
             if (tempFile == null){
                 toast("You haven't got the map for today yet!")
             }else {
-                toast(todaysURL)
                 val mapboxintent =  Intent(this, MapBoxMain::class.java)
                 mapboxintent.putExtra("GEOJSON", tempFile)
                 startActivity(mapboxintent)
