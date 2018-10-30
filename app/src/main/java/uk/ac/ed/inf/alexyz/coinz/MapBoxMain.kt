@@ -1,12 +1,13 @@
 package uk.ac.ed.inf.alexyz.coinz
 
+//android
 import android.annotation.SuppressLint
 import android.location.Location
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity;
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
+
+//mapbox
 import com.mapbox.android.core.location.LocationEngine
 import com.mapbox.android.core.location.LocationEngineListener
 import com.mapbox.android.core.location.LocationEnginePriority
@@ -24,10 +25,11 @@ import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.CameraMode
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.RenderMode
-import com.mapbox.mapboxsdk.annotations.Marker
 
 import kotlinx.android.synthetic.main.activity_map_box_main.*
 import kotlinx.android.synthetic.main.content_map_box_main.*
+
+
 import java.security.Permission
 import org.jetbrains.anko.toast
 import org.json.JSONArray
@@ -65,7 +67,6 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
             enableLocation()
             dropPins(todayGJS)
         }
-
     }
 
     private fun dropPins(todayGJS:String){
@@ -79,29 +80,27 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
             val value: Double = properties.getDouble("value")
             val currency: String = properties.getString("currency")
             val markerS: Int = properties.getInt("marker-symbol")
-            val markerC: String = properties.getString("marker-color")
             val geometry: JSONObject = feature.getJSONObject("geometry")
             val holder: JSONArray = geometry.getJSONArray("coordinates")
             val longitude: Double = holder.getDouble(0)
             val latitude: Double = holder.getDouble(1)
             val coinLatLng: LatLng = LatLng(latitude,longitude)
             when {
-                currency.equals("PENY") ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_marker_15red)
-                                        this.map.addMarker(MarkerOptions().position(coinLatLng).icon(myIcon))}
+                currency.equals("PENY") ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_redmarker)
+                                        this.map.addMarker(MarkerOptions().position(coinLatLng).icon(myIcon).title("${currency} value : ${value}"))}
 
-                currency.equals("SHIL") ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_marker_15blue)
-                                        this.map.addMarker(MarkerOptions().position(coinLatLng).icon(myIcon))}
+                currency.equals("SHIL") ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_bluemarker)
+                                        this.map.addMarker(MarkerOptions().position(coinLatLng).icon(myIcon).title("${currency} value : ${value}"))}
 
-                currency.equals("QUID") ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_marker_15yellow)
-                                        this.map.addMarker(MarkerOptions().position(coinLatLng).icon(myIcon))}
+                currency.equals("QUID") ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_yellowmarker)
+                                        this.map.addMarker(MarkerOptions().position(coinLatLng).icon(myIcon).title("${currency} value : ${value}"))}
 
-                currency.equals("DOLR") ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_marker_15green)
-                                        this.map.addMarker(MarkerOptions().position(coinLatLng).icon(myIcon))}
+                currency.equals("DOLR") ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_greenmarker)
+                                        this.map.addMarker(MarkerOptions().position(coinLatLng).icon(myIcon).title("${currency} value : ${value}"))}
             }
         }
     }
-
-    fun enableLocation(){
+    private fun enableLocation(){
         if (PermissionsManager.areLocationPermissionsGranted(this)){
             initialiseLocationEngine()
             initialiseLocationLayer()

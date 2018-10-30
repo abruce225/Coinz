@@ -29,7 +29,7 @@ class CoinzHome : AppCompatActivity() {
 
     private var downloadDate = "yyyy/MM/dd"
 
-    private lateinit var tempFile: String
+    private var tempFile: String? = null
 
     private val preferencesFile = "MyPrefsFile"
 
