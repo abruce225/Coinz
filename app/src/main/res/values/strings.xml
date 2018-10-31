@@ -1,9 +1,7 @@
 <resources>
     <string name="app_name">Coinz</string>
     <string name="action_settings">Settings</string>
-    <string name="upslashdown">Current Vote Count is at: </string>
-    <string name="tallycount">0</string>
-    <string name="randheading">"Here is a random number between 0 and number of upvotes: "</string>
+    <string name="dailyrates">Shil:0\nDolr:00000\nQuid:000\nPeny:99999</string>
     <string name="title_activity_map_box_main">MapBoxMain</string>
     <string name="access_token">pk.eyJ1IjoiYWJydWNlMjI1IiwiYSI6ImNqbm9qaHU2ejF3Z20za3M1Mnl6dmswZW4ifQ.BIie6wQThBY-WqnKMl7nrA</string>
 </resources>

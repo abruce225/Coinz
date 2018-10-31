@@ -6,6 +6,7 @@ import android.location.Location
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log
 
 //mapbox
 import com.mapbox.android.core.location.LocationEngine
@@ -14,9 +15,11 @@ import com.mapbox.android.core.location.LocationEnginePriority
 import com.mapbox.android.core.location.LocationEngineProvider
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
+import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.annotations.Icon
 import com.mapbox.mapboxsdk.annotations.IconFactory
+import com.mapbox.mapboxsdk.annotations.Marker
 import com.mapbox.mapboxsdk.annotations.MarkerOptions
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
@@ -39,6 +42,7 @@ import uk.ac.ed.inf.alexyz.coinz.R.drawable.*
 
 class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListener {
 
+
     companion object {
         const val GEOJSON = "GEOJSON"
     }
@@ -49,12 +53,19 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
     private lateinit var originLocation: Location
     private lateinit var todayGJS: String
 
+    private var myCoins = arrayListOf<Coin>()
+
     private var locationEngine: LocationEngine? = null
     private var locationLayerPlugin: LocationLayerPlugin? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map_box_main)
+
+        val sharedPrefs = MySharedPrefs(this)
+        var goldSum = sharedPrefs.getGoldSum()
+
+        var tally = 0;
 
         todayGJS = intent.getStringExtra(GEOJSON)
 
@@ -67,10 +78,17 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
             enableLocation()
             dropPins(todayGJS)
         }
+        displayRates.setOnClickListener{view ->
+            map.removeMarker(myCoins[tally].marker)
+            tally++
+            toast(goldSum.toString())
+
+        }
     }
 
     private fun dropPins(todayGJS:String){
-        val json: JSONObject = JSONObject(todayGJS)
+        val json = JSONObject(todayGJS)
+
         val features: JSONArray = json.getJSONArray("features")
         val featuresCount = features.length() - 1
         for (i in 0..featuresCount){
@@ -87,16 +105,25 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
             val coinLatLng: LatLng = LatLng(latitude,longitude)
             when {
                 currency.equals("PENY") ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_redmarker)
-                                        this.map.addMarker(MarkerOptions().position(coinLatLng).icon(myIcon).title("${currency} value : ${value}"))}
+                                        var myMarker: Marker = this.map.addMarker(MarkerOptions().position(coinLatLng).icon(myIcon).title("${currency} value : ${value}"))
+                                        val tempCoin = Coin(id,currency,value,myMarker,coinLatLng)
+                                        myCoins.add(tempCoin)}
+
 
                 currency.equals("SHIL") ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_bluemarker)
-                                        this.map.addMarker(MarkerOptions().position(coinLatLng).icon(myIcon).title("${currency} value : ${value}"))}
+                                        var myMarker: Marker = this.map.addMarker(MarkerOptions().position(coinLatLng).icon(myIcon).title("${currency} value : ${value}"))
+                                        val tempCoin = Coin(id,currency,value,myMarker,coinLatLng)
+                                        myCoins.add(tempCoin)}
 
                 currency.equals("QUID") ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_yellowmarker)
-                                        this.map.addMarker(MarkerOptions().position(coinLatLng).icon(myIcon).title("${currency} value : ${value}"))}
+                                        var myMarker: Marker = this.map.addMarker(MarkerOptions().position(coinLatLng).icon(myIcon).title("${currency} value : ${value}"))
+                                        val tempCoin = Coin(id,currency,value,myMarker,coinLatLng)
+                                        myCoins.add(tempCoin)}
 
                 currency.equals("DOLR") ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_greenmarker)
-                                        this.map.addMarker(MarkerOptions().position(coinLatLng).icon(myIcon).title("${currency} value : ${value}"))}
+                                        var myMarker: Marker = this.map.addMarker(MarkerOptions().position(coinLatLng).icon(myIcon).title("${currency} value : ${value}"))
+                                        val tempCoin = Coin(id,currency,value,myMarker,coinLatLng)
+                                        myCoins.add(tempCoin)}
             }
         }
     }
@@ -113,9 +140,12 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
     @SuppressLint("MissingPermission")
     private fun initialiseLocationEngine(){
         locationEngine = LocationEngineProvider(this).obtainBestLocationEngineAvailable()
-        locationEngine?.priority = LocationEnginePriority.HIGH_ACCURACY
-        locationEngine?.activate()
-
+        locationEngine?.addLocationEngineListener(this)
+        locationEngine?.apply {
+            interval = fastestInterval
+            priority = LocationEnginePriority.HIGH_ACCURACY
+            activate()
+        }
         val lastLocation = locationEngine?.lastLocation
         if (lastLocation != null){
             originLocation = lastLocation
@@ -157,7 +187,7 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
     }
 
     override fun onExplanationNeeded(permissionsToExplain: MutableList<String>?) {
-        toast("We require this permission if you wish to collect any coinz")
+        toast("Plz")
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -196,4 +226,8 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
         super.onLowMemory()
         mapView.onLowMemory()
     }
+}
+
+private class Coin(val id:String,val currency:String,val value:Double,val marker: Marker,val latLng: LatLng ){
+
 }

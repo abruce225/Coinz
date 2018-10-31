@@ -6,7 +6,6 @@ import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.content.Intent
-import android.os.AsyncTask
 
 import kotlinx.android.synthetic.main.activity_coinz_home.*
 import kotlinx.android.synthetic.main.content_coinz_home.*
@@ -14,31 +13,30 @@ import java.util.*
 
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.result.Result
-import com.github.kittinunf.result.getAs
-import okhttp3.OkHttpClient
 
 
 import org.jetbrains.anko.toast
-import java.io.File
-import java.io.PrintStream
+
 import java.text.SimpleDateFormat
 
 class CoinzHome : AppCompatActivity() {
 
     private val tag = "CoinzHome"
 
-    private var downloadDate = "yyyy/MM/dd"
-
     private var tempFile: String? = null
 
-    private val preferencesFile = "MyPrefsFile"
+    private  var goldSum: Float? = null
+
+    private val sdf = SimpleDateFormat("yyyy/MM/dd")
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_coinz_home)
         setSupportActionBar(toolbar)
-        val todaysURL = getGeoJSON()
+        val mypref = MySharedPrefs(this)
+        mypref.setToday(sdf.format(Date()))
+        getGeoJSON()
         playButton.setOnClickListener { view ->
             if (tempFile == null){
                 toast("You haven't got the map for today yet!")
@@ -48,11 +46,15 @@ class CoinzHome : AppCompatActivity() {
                 startActivity(mapboxintent)
             }
         }
+        settingsButton.setOnClickListener {view ->
+            mypref.addGold(35.toFloat())
+            goldSum = mypref.getGoldSum()
+            toast(goldSum.toString())
+        }
 
     }
 
-    private fun getGeoJSON(): String{
-        val sdf = SimpleDateFormat("yyyy/MM/dd")
+    private fun getGeoJSON(){
         val currentDate = sdf.format(Date()) + "/coinzmap.geojson"
         val todaysURL = ("http://homepages.inf.ed.ac.uk/stg/coinz/$currentDate")
         todaysURL.httpGet().responseString(){request,response,result->
@@ -64,7 +66,6 @@ class CoinzHome : AppCompatActivity() {
                 is Result.Failure -> {toast("Failed to download today's map.")}
             }
         }
-        return todaysURL
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
