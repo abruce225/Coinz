@@ -7,6 +7,9 @@ import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log
+import com.github.kittinunf.fuel.android.core.Json
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 //mapbox
 import com.mapbox.android.core.location.LocationEngine
@@ -38,14 +41,12 @@ import org.jetbrains.anko.toast
 import org.json.JSONArray
 import org.json.JSONObject
 import uk.ac.ed.inf.alexyz.coinz.R.drawable.*
+import java.lang.reflect.Type
 
 
 class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListener {
 
 
-    companion object {
-        const val GEOJSON = "GEOJSON"
-    }
 
     private lateinit var mapView: MapView
     private lateinit var map: MapboxMap
@@ -53,42 +54,122 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
     private lateinit var originLocation: Location
     private lateinit var todayGJS: String
 
+
     private var myCoins = arrayListOf<Coin>()
+    private var collectedCoins = arrayListOf<Coin>()
+    private var remainingCoins = arrayListOf<Coin>()
+
+    private var remainingMarkers = arrayListOf<Marker>()
 
     private var locationEngine: LocationEngine? = null
     private var locationLayerPlugin: LocationLayerPlugin? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val sharedPrefs: MySharedPrefs = MySharedPrefs(this)
+
         setContentView(R.layout.activity_map_box_main)
-
-        val sharedPrefs = MySharedPrefs(this)
-        var goldSum = sharedPrefs.getGoldSum()
-
-        var tally = 0;
-
-        todayGJS = intent.getStringExtra(GEOJSON)
-
+        todayGJS = sharedPrefs.getTodayGEOJSON()
         setSupportActionBar(toolbar)
+        if (sharedPrefs.getCollectedCoins() != "" || sharedPrefs.getRemainingCoins() != ""){
+            toast("henlo")
+            getCollected()
+            getRemaining()
+        }
         Mapbox.getInstance(applicationContext, getString(R.string.access_token))
         mapView = findViewById(R.id.mapView)
         mapView.onCreate(savedInstanceState)
         mapView.getMapAsync{ mapboxMap ->
             map = mapboxMap
             enableLocation()
-            dropPins(todayGJS)
+            if(collectedCoins.size == 0 || remainingCoins.size == 0){
+                createPins(todayGJS)
+            }
+            dropPins()
         }
         displayRates.setOnClickListener{view ->
-            map.removeMarker(myCoins[tally].marker)
-            tally++
-            toast(goldSum.toString())
+            if(remainingMarkers.size > 0){
+                removeMarker(remainingMarkers[0],remainingCoins[0])
+            }  else {
+                toast("all markers collected")
+            }
+        }
+        floatingActionButton.setOnClickListener{view ->
 
         }
     }
 
-    private fun dropPins(todayGJS:String){
-        val json = JSONObject(todayGJS)
+    private fun dropPins(){
+        remainingMarkers.clear()
+        for (a in remainingCoins){
+            when {
+                a.currency.equals("PENY") ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_redmarker)
+                    remainingMarkers.add(map.addMarker(MarkerOptions().position(a.latLng).icon(myIcon).title("${a.currency} value : ${a.value}"))) }
 
+                a.currency.equals("SHIL") ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_bluemarker)
+                    remainingMarkers.add(map.addMarker(MarkerOptions().position(a.latLng).icon(myIcon).title("${a.currency} value : ${a.value}"))) }
+
+                a.currency.equals("QUID") ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_yellowmarker)
+                    remainingMarkers.add(map.addMarker(MarkerOptions().position(a.latLng).icon(myIcon).title("${a.currency} value : ${a.value}"))) }
+
+                a.currency.equals("DOLR") ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_greenmarker)
+                    remainingMarkers.add(map.addMarker(MarkerOptions().position(a.latLng).icon(myIcon).title("${a.currency} value : ${a.value}"))) }
+            }
+        }
+    }
+
+    private fun removeMarker(marker:Marker, coin: Coin){
+        map.removeMarker(marker)
+        remainingMarkers.remove(marker)
+        collectedCoins.add(coin)
+        remainingCoins.remove(coin)
+    }
+
+    private fun setCollected(){
+        val sharedPrefs: MySharedPrefs = MySharedPrefs(this)
+        val myGSON = Gson()
+        val json = myGSON.toJson(collectedCoins)
+        sharedPrefs.setCollectedCoins(json)
+
+    }
+
+    private fun getCollected(){
+        val sharedPrefs: MySharedPrefs = MySharedPrefs(this)
+        val myGSON = Gson()
+        val json = sharedPrefs.getCollectedCoins()
+        if(json != ""){
+            val coinType = object : TypeToken<List<Coin>>() {}.type
+            collectedCoins = myGSON.fromJson(json,coinType)
+        }else{
+            collectedCoins.clear()
+        }
+
+    }
+
+
+    private fun setRemaining(){
+        val sharedPrefs: MySharedPrefs = MySharedPrefs(this)
+        val myGSON = Gson()
+        val json = myGSON.toJson(remainingCoins)
+        sharedPrefs.setRemainingCoins(json)
+    }
+
+    private fun getRemaining(){
+        val sharedPrefs: MySharedPrefs = MySharedPrefs(this)
+        val myGSON = Gson()
+        val json = sharedPrefs.getRemainingCoins()
+        if (json != ""){
+            val coinType = object : TypeToken<List<Coin>>() {}.type
+            remainingCoins = myGSON.fromJson(json,coinType)
+        }else{
+            remainingCoins.clear()
+        }
+
+    }
+
+    private fun createPins(todayGJS:String){
+        myCoins.clear()
+        val json = JSONObject(todayGJS)
         val features: JSONArray = json.getJSONArray("features")
         val featuresCount = features.length() - 1
         for (i in 0..featuresCount){
@@ -103,30 +184,12 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
             val longitude: Double = holder.getDouble(0)
             val latitude: Double = holder.getDouble(1)
             val coinLatLng: LatLng = LatLng(latitude,longitude)
-            when {
-                currency.equals("PENY") ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_redmarker)
-                                        var myMarker: Marker = this.map.addMarker(MarkerOptions().position(coinLatLng).icon(myIcon).title("${currency} value : ${value}"))
-                                        val tempCoin = Coin(id,currency,value,myMarker,coinLatLng)
-                                        myCoins.add(tempCoin)}
-
-
-                currency.equals("SHIL") ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_bluemarker)
-                                        var myMarker: Marker = this.map.addMarker(MarkerOptions().position(coinLatLng).icon(myIcon).title("${currency} value : ${value}"))
-                                        val tempCoin = Coin(id,currency,value,myMarker,coinLatLng)
-                                        myCoins.add(tempCoin)}
-
-                currency.equals("QUID") ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_yellowmarker)
-                                        var myMarker: Marker = this.map.addMarker(MarkerOptions().position(coinLatLng).icon(myIcon).title("${currency} value : ${value}"))
-                                        val tempCoin = Coin(id,currency,value,myMarker,coinLatLng)
-                                        myCoins.add(tempCoin)}
-
-                currency.equals("DOLR") ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_greenmarker)
-                                        var myMarker: Marker = this.map.addMarker(MarkerOptions().position(coinLatLng).icon(myIcon).title("${currency} value : ${value}"))
-                                        val tempCoin = Coin(id,currency,value,myMarker,coinLatLng)
-                                        myCoins.add(tempCoin)}
-            }
+            val tempCOin = Coin(id,currency,value,coinLatLng)
+            myCoins.add(tempCOin)
         }
-    }
+        remainingCoins = myCoins
+    } //this function creates all 50 coins from the provided GEOJSON, and adds them to myCOins, and remainingCoins
+
     private fun enableLocation(){
         if (PermissionsManager.areLocationPermissionsGranted(this)){
             initialiseLocationEngine()
@@ -165,7 +228,7 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
     }
 
     private fun setCameraPosition(location: Location){
-        map.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(location.latitude, location.longitude), 14.0))
+        map.animateCamera(CameraUpdateFactory.newLatLng(LatLng(location.latitude, location.longitude)))
     }
 
     @SuppressLint("MissingPermission")
@@ -203,23 +266,35 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
         }
         mapView.onStart()
     }
+
     override fun onPause() {
         super.onPause()
+        locationEngine?.removeLocationUpdates()
         mapView.onPause()
     }
+
+    @SuppressWarnings("MissingPermission")
     override fun onResume() {
         super.onResume()
+        locationEngine?.requestLocationUpdates()
         mapView.onResume()
     }
+
     override fun onStop() {
         super.onStop()
         locationEngine?.removeLocationUpdates()
+        locationEngine?.deactivate()
         mapView.onStop()
+        setRemaining()
+        setCollected()
     }
+
     override fun onDestroy() {
         super.onDestroy()
         locationEngine?.deactivate()
         mapView.onDestroy()
+        setRemaining()
+        setCollected()
     }
 
     override fun onLowMemory() {
@@ -228,6 +303,6 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
     }
 }
 
-private class Coin(val id:String,val currency:String,val value:Double,val marker: Marker,val latLng: LatLng ){
+private class Coin(val id:String,val currency:String,val value:Double,val latLng: LatLng ){
 
 }

@@ -23,26 +23,25 @@ class CoinzHome : AppCompatActivity() {
 
     private val tag = "CoinzHome"
 
-    private var tempFile: String? = null
 
     private  var goldSum: Float? = null
 
     private val sdf = SimpleDateFormat("yyyy/MM/dd")
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
+        val mypref = MySharedPrefs(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_coinz_home)
         setSupportActionBar(toolbar)
-        val mypref = MySharedPrefs(this)
-        mypref.setToday(sdf.format(Date()))
         getGeoJSON()
         playButton.setOnClickListener { view ->
-            if (tempFile == null){
-                toast("You haven't got the map for today yet!")
+            if (mypref.getTodayGEOJSON() == ""){
+                toast("You haven't got the map for today yet!\nRe-attempting download now.")
+                getGeoJSON()
             }else {
                 val mapboxintent =  Intent(this, MapBoxMain::class.java)
-                mapboxintent.putExtra("GEOJSON", tempFile)
                 startActivity(mapboxintent)
             }
         }
@@ -55,15 +54,19 @@ class CoinzHome : AppCompatActivity() {
     }
 
     private fun getGeoJSON(){
+        val mypref = MySharedPrefs(this)
         val currentDate = sdf.format(Date()) + "/coinzmap.geojson"
         val todaysURL = ("http://homepages.inf.ed.ac.uk/stg/coinz/$currentDate")
         todaysURL.httpGet().responseString(){request,response,result->
             when(result){
                 is Result.Success -> {
                     toast("Todays map downloaded successfully!")
-                    tempFile = result.get()
+                    mypref.setTodayGEOJSON(result.get())
+
                 }
-                is Result.Failure -> {toast("Failed to download today's map.")}
+                is Result.Failure -> {
+                    toast("Failed to download today's map.")
+                }
             }
         }
     }

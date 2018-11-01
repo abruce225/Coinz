@@ -18,6 +18,17 @@
         mapbox:layout_constraintEnd_toEndOf="parent"
         mapbox:srcCompat="@drawable/ic_rocket_15white" />
 
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/floatingActionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="36dp"
+        android:layout_marginBottom="24dp"
+        android:clickable="true"
+        mapbox:layout_constraintBottom_toTopOf="@+id/displayRates"
+        mapbox:layout_constraintEnd_toEndOf="parent"
+        tools:srcCompat="@tools:sample/backgrounds/scenic" />
+
     <com.mapbox.mapboxsdk.maps.MapView
         android:id="@+id/mapView"
         android:layout_width="match_parent"
@@ -25,7 +36,9 @@
         mapbox:mapbox_cameraTargetLat="55.9441"
         mapbox:mapbox_cameraTargetLng="-3.1870"
         mapbox:mapbox_cameraZoom="14"
-        mapbox:mapbox_styleUrl="mapbox://styles/mapbox/streets-v10">
+        mapbox:mapbox_styleUrl="mapbox://styles/mapbox/streets-v10"
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="16dp">
 
     </com.mapbox.mapboxsdk.maps.MapView>
 
