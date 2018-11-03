@@ -4,4 +4,13 @@
     <string name="dailyrates">Shil:0\nDolr:00000\nQuid:000\nPeny:99999</string>
     <string name="title_activity_map_box_main">MapBoxMain</string>
     <string name="access_token">pk.eyJ1IjoiYWJydWNlMjI1IiwiYSI6ImNqbm9qaHU2ejF3Z20za3M1Mnl6dmswZW4ifQ.BIie6wQThBY-WqnKMl7nrA</string>
+
+    <string name="mapProgressFALSE">Todays map not yet downloaded!</string>
+    <string name="mapProgressTRUE">Todays map downloaded successfully!</string>
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="password">Please enter your password.</string>
+    <string name="email">Please enter your email address.</string>
+    <string name="registerCap">Welcome to Coinz!</string>
+
 </resources>

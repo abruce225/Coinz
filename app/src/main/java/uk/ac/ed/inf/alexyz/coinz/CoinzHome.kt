@@ -13,9 +13,11 @@ import java.util.*
 
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.result.Result
+import com.google.firebase.auth.FirebaseAuth
 
 
 import org.jetbrains.anko.toast
+import uk.ac.ed.inf.alexyz.coinz.R.*
 
 import java.text.SimpleDateFormat
 
@@ -23,8 +25,9 @@ class CoinzHome : AppCompatActivity() {
 
     private val tag = "CoinzHome"
 
-
     private  var goldSum: Float? = null
+
+    private lateinit var mAuth: FirebaseAuth
 
     private val sdf = SimpleDateFormat("yyyy/MM/dd")
 
@@ -33,9 +36,8 @@ class CoinzHome : AppCompatActivity() {
 
         val mypref = MySharedPrefs(this)
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_coinz_home)
+        setContentView(layout.activity_coinz_home)
         setSupportActionBar(toolbar)
-        getGeoJSON()
         playButton.setOnClickListener { view ->
             if (mypref.getTodayGEOJSON() == ""){
                 toast("You haven't got the map for today yet!\nRe-attempting download now.")
@@ -60,7 +62,8 @@ class CoinzHome : AppCompatActivity() {
         todaysURL.httpGet().responseString(){request,response,result->
             when(result){
                 is Result.Success -> {
-                    toast("Todays map downloaded successfully!")
+                    mapDownloadNotifier.text = getString(string.mapProgressTRUE)
+                    mapDownloadNotifier.background = getDrawable(color.mapDownloadBackGroundTRUE)
                     mypref.setTodayGEOJSON(result.get())
 
                 }
@@ -82,8 +85,15 @@ class CoinzHome : AppCompatActivity() {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
-            R.id.action_settings -> true
+            id.action_settings -> true
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        getGeoJSON()
+        mAuth = FirebaseAuth.getInstance()
+        toast(mAuth.currentUser?.email.toString())
     }
 }

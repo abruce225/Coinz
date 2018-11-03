@@ -3,8 +3,14 @@
     <color name="colorPrimary">#4264fb</color>
     <color name="colorPrimaryDark">#4264fb</color>
     <color name="colorAccent">#4264fb</color>
+    <color name="mainTheme">#00996e</color>
+    <color name="mainThemeDark">#007045</color>
+    <color name="myGold">#D4AF37</color>
 
     <color name="mapboxWhite">#ffffff</color>
     <color name="mapboxBlue">#4264fb</color>
     <color name="mapbpxGrayLight">#c6d2e1</color>
+
+    <color name="mapDownloadBackgroundFALSE">#f02050</color>
+    <color name="mapDownloadBackGroundTRUE">#229999</color>
 </resources>

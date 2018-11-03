@@ -15,8 +15,7 @@
         <activity
             android:name=".CoinzHome"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".MapBoxMain"
             android:label="@string/title_activity_map_box_main"
@@ -24,7 +23,6 @@
         <activity android:name=".LoginScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
