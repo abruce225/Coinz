@@ -16,28 +16,13 @@
                             <entry key="actionbar">
                               <value>
                                 <PersistentState>
-                                  <option name="children">
-                                    <map>
-                                      <entry key="image">
-                                        <value>
-                                          <PersistentState>
-                                            <option name="values">
-                                              <map>
-                                                <entry key="paddingPercent" value="-10" />
-                                              </map>
-                                            </option>
-                                          </PersistentState>
-                                        </value>
-                                      </entry>
-                                    </map>
-                                  </option>
                                   <option name="values">
                                     <map>
                                       <entry key="assetType" value="IMAGE" />
-                                      <entry key="imageAsset" value="$USER_HOME$/Downloads/MarkersRGBY/bluemarker.png" />
-                                      <entry key="outputName" value="ic_yellowmarker" />
+                                      <entry key="imageAsset" value="$USER_HOME$/Downloads/PNGsForCoinz/exclamation-mark.png" />
+                                      <entry key="outputName" value="ic_exclamation" />
                                       <entry key="theme" value="CUSTOM" />
-                                      <entry key="themeColor" value="ffdf00" />
+                                      <entry key="themeColor" value="d4af37" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -87,12 +72,17 @@
                                     <map>
                                       <entry key="backgroundAssetType" value="COLOR" />
                                       <entry key="backgroundColor" value="00996e" />
-                                      <entry key="foregroundImage" value="$USER_HOME$/Downloads/coins2.png" />
+                                      <entry key="foregroundImage" value="$USER_HOME$/Downloads/PNGsForCoinz/coins2.png" />
                                     </map>
                                   </option>
                                 </PersistentState>
                               </value>
                             </entry>
+                          </map>
+                        </option>
+                        <option name="values">
+                          <map>
+                            <entry key="outputIconType" value="ACTIONBAR" />
                           </map>
                         </option>
                       </PersistentState>

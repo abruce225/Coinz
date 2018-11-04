@@ -5,41 +5,94 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MapBoxMain"
-    tools:showIn="@layout/activity_map_box_main">
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/displayRates"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="36dp"
-        android:layout_marginBottom="36dp"
-        android:clickable="true"
-        mapbox:layout_constraintBottom_toBottomOf="parent"
-        mapbox:layout_constraintEnd_toEndOf="parent"
-        mapbox:srcCompat="@drawable/ic_rocket_15white" />
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/floatingActionButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="36dp"
-        android:layout_marginBottom="24dp"
-        android:clickable="true"
-        mapbox:layout_constraintBottom_toTopOf="@+id/displayRates"
-        mapbox:layout_constraintEnd_toEndOf="parent"
-        tools:srcCompat="@tools:sample/backgrounds/scenic" />
+    tools:showIn="@layout/activity_map_box_main"
+    android:backgroundTint="@color/mainTheme"
+    android:background="@color/myGold">
 
     <com.mapbox.mapboxsdk.maps.MapView
         android:id="@+id/mapView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        mapbox:layout_constraintEnd_toEndOf="parent"
+        mapbox:layout_constraintHorizontal_bias="0.0"
+        mapbox:layout_constraintStart_toStartOf="parent"
         mapbox:mapbox_cameraTargetLat="55.9441"
         mapbox:mapbox_cameraTargetLng="-3.1870"
         mapbox:mapbox_cameraZoom="14"
         mapbox:mapbox_styleUrl="mapbox://styles/mapbox/streets-v10"
-        tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="16dp">
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteY="0dp">
 
     </com.mapbox.mapboxsdk.maps.MapView>
+
+    <com.michaldrabik.tapbarmenulib.TapBarMenu
+        android:id="@+id/tapBarMenu"
+        android:layout_width="match_parent"
+        android:layout_height="86dp"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="8dp"
+        mapbox:tbm_backgroundColor="@color/mainTheme"
+        mapbox:layout_constraintBottom_toBottomOf="parent"
+        mapbox:layout_constraintEnd_toEndOf="parent"
+        mapbox:layout_constraintHorizontal_bias="0.0"
+        mapbox:layout_constraintStart_toStartOf="parent"
+        mapbox:layout_constraintTop_toBottomOf="@+id/mapView"
+        mapbox:layout_constraintVertical_bias="1.0">
+
+        <ImageButton
+            android:id="@+id/collectRandom"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:paddingLeft="10dp"
+            android:src="@drawable/ic_exchangerate"
+            android:backgroundTint="@color/mainTheme"
+            android:background="@color/myGold"/>
+
+
+        <ImageButton
+            android:id="@+id/resetDay"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:src="@drawable/ic_exclamation"
+            android:backgroundTint="@color/mainTheme"
+            android:background="@color/myGold" />
+
+        <Space
+            android:layout_width="56dp"
+            android:layout_height="match_parent" />
+
+        <ImageButton
+            android:id="@+id/openWallet"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:src="@drawable/ic_wallet_logo"
+            android:backgroundTint="@color/mainTheme"
+            android:background="@color/myGold"/>
+
+
+        <ImageButton
+            android:id="@+id/displayRates"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingTop="10dp"
+            android:paddingRight="10dp"
+            android:paddingBottom="10dp"
+            android:src="@drawable/ic_exchangerate"
+            android:backgroundTint="@color/mainTheme"
+            android:background="@color/myGold" />
+
+    </com.michaldrabik.tapbarmenulib.TapBarMenu>
+
+    <!--suppress AndroidUnknownAttribute -->
 
 </android.support.constraint.ConstraintLayout>

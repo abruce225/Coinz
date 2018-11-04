@@ -20,9 +20,13 @@ class LoginScreen : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login_screen)
+        val mySharedPrefs = MySharedPrefs(this)
         email = findViewById(R.id.signup_email_input)
         password = findViewById(R.id.signup_password_input)
         mAuth = FirebaseAuth.getInstance()
+        if(mySharedPrefs.getEmail() != "") {
+            email.setText(mySharedPrefs.getEmail())
+        }
         button_login.setOnClickListener{view->
             loginUser()
         }
@@ -47,7 +51,7 @@ class LoginScreen : AppCompatActivity() {
 
         mAuth.createUserWithEmailAndPassword(myEmail,myPassword).addOnCompleteListener{task ->
             if(task.isSuccessful){
-                toast("Registration Successful\nPlease Log-in to play!")
+                loginUser()
             }else{
                 toast("Registration Failed\nPlease try again.")
             }
@@ -56,6 +60,7 @@ class LoginScreen : AppCompatActivity() {
     }
 
     private fun loginUser(){
+        val mySharedPrefs = MySharedPrefs(this)
         val myEmail:String = email.text.toString().trim()
         val myPassword:String = password.text.toString().trim()
 
@@ -72,6 +77,7 @@ class LoginScreen : AppCompatActivity() {
         mAuth.signInWithEmailAndPassword(myEmail,myPassword).addOnCompleteListener{task ->
             if(task.isSuccessful){
                 toast("Log-in complete\nHave fun!")
+                mySharedPrefs.setEmail(myEmail)
                 startActivity(Intent(this,CoinzHome::class.java))
             }else{
                 toast("Log-in failed\nPlease check your details.")

@@ -39,7 +39,7 @@ class CoinzHome : AppCompatActivity() {
         setContentView(layout.activity_coinz_home)
         setSupportActionBar(toolbar)
         playButton.setOnClickListener { view ->
-            if (mypref.getTodayGEOJSON() == ""){
+            if (mypref.getTodayGEOJSON() == "" || mypref.getToday() != sdf.format(Date())){
                 toast("You haven't got the map for today yet!\nRe-attempting download now.")
                 getGeoJSON()
             }else {
@@ -57,20 +57,30 @@ class CoinzHome : AppCompatActivity() {
 
     private fun getGeoJSON(){
         val mypref = MySharedPrefs(this)
-        val currentDate = sdf.format(Date()) + "/coinzmap.geojson"
-        val todaysURL = ("http://homepages.inf.ed.ac.uk/stg/coinz/$currentDate")
-        todaysURL.httpGet().responseString(){request,response,result->
-            when(result){
-                is Result.Success -> {
-                    mapDownloadNotifier.text = getString(string.mapProgressTRUE)
-                    mapDownloadNotifier.background = getDrawable(color.mapDownloadBackGroundTRUE)
-                    mypref.setTodayGEOJSON(result.get())
+        if(mypref.getToday() != sdf.format(Date()) || mypref.getTodayGEOJSON() == "") {
+            mypref.setCollectedCoins("")
+            mypref.setRemainingCoins("")
+            mypref.setTodayGEOJSON("")
+            mypref.setToday(sdf.format(Date()))
+            val currentDate = sdf.format(Date()) + "/coinzmap.geojson"
+            val todaysURL = ("http://homepages.inf.ed.ac.uk/stg/coinz/$currentDate")
+            todaysURL.httpGet().responseString() { request, response, result ->
+                when (result) {
+                    is Result.Success -> {
+                        mapDownloadNotifier.text = getString(string.mapProgressTRUE)
+                        mapDownloadNotifier.background = getDrawable(color.mapDownloadBackGroundTRUE)
+                        mypref.setToday(sdf.format(Date()))
+                        mypref.setTodayGEOJSON(result.get())
 
-                }
-                is Result.Failure -> {
-                    toast("Failed to download today's map.")
+                    }
+                    is Result.Failure -> {
+                        toast("Failed to download today's map.")
+                    }
                 }
             }
+        }else{
+            mapDownloadNotifier.text = getString(string.mapProgressTRUE)
+            mapDownloadNotifier.background = getDrawable(color.mapDownloadBackGroundTRUE)
         }
     }
 

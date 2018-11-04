@@ -10,10 +10,20 @@ class MySharedPrefs(context: Context){
     val CURRENT_GEOJSON = "TodayGEOJSON"
     val COLLECTED_COINS = "CollectedCoins"
     val REMAINING_COINS = "RemainingCoins"
+    val RECENT_EMAIL = "RecentEmail"
     val zeroFloat:Float = 0.toFloat()
 
     val preference = context.getSharedPreferences(PREFERENCE_NAME,Context.MODE_PRIVATE)
 
+    fun getEmail():String{
+        return preference.getString(RECENT_EMAIL,"")
+    }
+
+    fun setEmail(email:String){
+        val editor = preference.edit()
+        editor.putString(RECENT_EMAIL,email)
+        editor.apply()
+    }
 
     fun getGoldSum() : Float{
         return preference.getFloat(GOLD_VALUE,zeroFloat)
