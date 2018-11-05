@@ -14,22 +14,54 @@
         android:textSize="30sp"
         android:text="@string/registerCap"
         android:textColor="#000"/>
-    <EditText
-        android:padding="10dp"
-        android:layout_margin="5dp"
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/email"
-        android:id="@+id/signup_email_input"
-        android:inputType="textEmailAddress"/>
-    <EditText
-        android:padding="10dp"
-        android:layout_margin="5dp"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/signup_email_input"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:hint="@string/email"
+            android:importantForAutofill="no"
+            android:inputType="textEmailAddress"
+            android:padding="10dp" />
+
+        <Switch
+            android:id="@+id/switchemail"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingRight="25dp"
+            android:paddingLeft="25dp"/>
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/password"
-        android:id="@+id/signup_password_input"
-        android:inputType="textPassword"/>
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/signup_password_input"
+            android:layout_width="280dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:hint="@string/password"
+            android:importantForAutofill="no"
+            android:inputType="textPassword"
+            android:padding="10dp" />
+
+        <Switch
+            android:id="@+id/switchpassword"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingRight="25dp"
+            android:paddingLeft="25dp"/>
+    </LinearLayout>
 
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"

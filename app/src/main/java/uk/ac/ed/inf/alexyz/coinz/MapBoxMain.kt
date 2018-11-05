@@ -4,6 +4,7 @@ package uk.ac.ed.inf.alexyz.coinz
 import android.annotation.SuppressLint
 import android.location.Location
 import android.os.Bundle
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity;
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -27,9 +28,9 @@ import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.CameraMode
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.RenderMode
+import kotlinx.android.synthetic.main.activity_coinz_home.*
 
 import kotlinx.android.synthetic.main.activity_map_box_main.*
-import kotlinx.android.synthetic.main.content_map_box_main.*
 
 import org.jetbrains.anko.toast
 import org.json.JSONArray
@@ -60,7 +61,6 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
         setContentView(R.layout.activity_map_box_main)
         val sharedPrefs = MySharedPrefs(this)
         todayGJS = sharedPrefs.getTodayGEOJSON()
-        setSupportActionBar(toolbar)
         if (sharedPrefs.getCollectedCoins() != "" || sharedPrefs.getRemainingCoins() != ""){
             getCoins()
         }
@@ -74,6 +74,8 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
                 createPins()
             }
             dropPins()
+            map.uiSettings.setCompassMargins(100,150,100,100)
+            map.uiSettings.setCompassFadeFacingNorth(false)
         }
         tapBarMenu.setOnClickListener{view ->
             tapBarMenu.toggle()
@@ -91,8 +93,12 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
                 toast("all markers collected")
             }
         }
-        displayRates.setOnClickListener{view ->
-            toast("TODO RATES POP UP")
+        displayRates.setOnClickListener{view->
+            val builder: AlertDialog.Builder = AlertDialog.Builder(this, android.R.style.ThemeOverlay_Material_Dialog).apply {
+                setTitle("Exc Rates For: ${sdf.format(Date())}")
+                setMessage("SHIL: ${sharedPrefs.getSHIL()}\nDOLR: ${sharedPrefs.getDOLR()}\nPENY: ${sharedPrefs.getPENY()}\nQUID: ${sharedPrefs.getQUID()}\n")
+                show()
+            }
         }
 
     }
@@ -282,7 +288,6 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
     override fun onLocationChanged(location: Location?) {
         location?.let {
             originLocation = location
-            setCameraPosition(location)
             checkIfNear(LatLng(location.latitude,location.longitude))
         }
     }

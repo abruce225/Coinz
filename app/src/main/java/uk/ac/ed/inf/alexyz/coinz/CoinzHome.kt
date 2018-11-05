@@ -1,22 +1,25 @@
 package uk.ac.ed.inf.alexyz.coinz
 
+import android.content.DialogInterface
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.content.Intent
+import android.support.v7.app.AlertDialog
 
 import kotlinx.android.synthetic.main.activity_coinz_home.*
-import kotlinx.android.synthetic.main.content_coinz_home.*
 import java.util.*
 
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.result.Result
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.android.synthetic.main.activity_map_box_main.*
 
 
 import org.jetbrains.anko.toast
+import org.json.JSONObject
 import uk.ac.ed.inf.alexyz.coinz.R.*
 
 import java.text.SimpleDateFormat
@@ -37,7 +40,6 @@ class CoinzHome : AppCompatActivity() {
         val mypref = MySharedPrefs(this)
         super.onCreate(savedInstanceState)
         setContentView(layout.activity_coinz_home)
-        setSupportActionBar(toolbar)
         playButton.setOnClickListener { view ->
             if (mypref.getTodayGEOJSON() == "" || mypref.getToday() != sdf.format(Date())){
                 toast("You haven't got the map for today yet!\nRe-attempting download now.")
@@ -47,12 +49,27 @@ class CoinzHome : AppCompatActivity() {
                 startActivity(mapboxintent)
             }
         }
+        walletButton.setOnClickListener{view->
+            toast(mypref.getPENY().toString())
+        }
         settingsButton.setOnClickListener {view ->
             mypref.addGold(35.toFloat())
             goldSum = mypref.getGoldSum()
             toast(goldSum.toString())
         }
-
+        tapBarMenuHome.setOnClickListener{view ->
+            tapBarMenuHome.toggle()
+        }
+        userProfile.setOnClickListener { view ->
+            startActivity(Intent(this, UserProfile::class.java))
+        }
+        displayRatesHome.setOnClickListener{view->
+            val builder: AlertDialog.Builder = AlertDialog.Builder(this, android.R.style.ThemeOverlay_Material_Dialog).apply {
+                setTitle("Exc Rates For: ${sdf.format(Date())}")
+                setMessage("SHIL: ${mypref.getSHIL()}\nDOLR: ${mypref.getDOLR()}\nPENY: ${mypref.getPENY()}\nQUID: ${mypref.getQUID()}\n")
+                show()
+            }
+        }
     }
 
     private fun getGeoJSON(){
@@ -61,6 +78,7 @@ class CoinzHome : AppCompatActivity() {
             mypref.setCollectedCoins("")
             mypref.setRemainingCoins("")
             mypref.setTodayGEOJSON("")
+            mypref.setRates(0.toFloat(),0.toFloat(),0.toFloat(),0.toFloat())
             mypref.setToday(sdf.format(Date()))
             val currentDate = sdf.format(Date()) + "/coinzmap.geojson"
             val todaysURL = ("http://homepages.inf.ed.ac.uk/stg/coinz/$currentDate")
@@ -68,10 +86,17 @@ class CoinzHome : AppCompatActivity() {
                 when (result) {
                     is Result.Success -> {
                         mapDownloadNotifier.text = getString(string.mapProgressTRUE)
-                        mapDownloadNotifier.background = getDrawable(color.mapDownloadBackGroundTRUE)
+                        mapDownloadNotifier.setTextColor(getColor(color.mapDownloadBackGroundTRUE))
                         mypref.setToday(sdf.format(Date()))
                         mypref.setTodayGEOJSON(result.get())
-
+                        val json = JSONObject(result.get())
+                        val rates:JSONObject = json.getJSONObject("rates")
+                        mypref.setRates(
+                                rates.getDouble("QUID").toFloat(),
+                                rates.getDouble("DOLR").toFloat(),
+                                rates.getDouble("SHIL").toFloat(),
+                                rates.getDouble("PENY").toFloat()
+                        )
                     }
                     is Result.Failure -> {
                         toast("Failed to download today's map.")
@@ -80,23 +105,7 @@ class CoinzHome : AppCompatActivity() {
             }
         }else{
             mapDownloadNotifier.text = getString(string.mapProgressTRUE)
-            mapDownloadNotifier.background = getDrawable(color.mapDownloadBackGroundTRUE)
-        }
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_coinz_home, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        return when (item.itemId) {
-            id.action_settings -> true
-            else -> super.onOptionsItemSelected(item)
+            mapDownloadNotifier.setTextColor(getColor(color.mapDownloadBackGroundTRUE))
         }
     }
 
@@ -104,6 +113,5 @@ class CoinzHome : AppCompatActivity() {
         super.onStart()
         getGeoJSON()
         mAuth = FirebaseAuth.getInstance()
-        toast(mAuth.currentUser?.email.toString())
     }
 }

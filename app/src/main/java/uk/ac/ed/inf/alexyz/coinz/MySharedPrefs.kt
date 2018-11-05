@@ -11,9 +11,40 @@ class MySharedPrefs(context: Context){
     val COLLECTED_COINS = "CollectedCoins"
     val REMAINING_COINS = "RemainingCoins"
     val RECENT_EMAIL = "RecentEmail"
+    val RECENT_PASSWORD = "RecentPass"
+    val SHIL_RATE = "shilRate"
+    val DOLR_RATE = "dolrRate"
+    val PENY_RATE = "penyRate"
+    val QUID_RATE = "quidRate"
+
     val zeroFloat:Float = 0.toFloat()
 
     val preference = context.getSharedPreferences(PREFERENCE_NAME,Context.MODE_PRIVATE)
+
+    fun getQUID():Float{
+        return preference.getFloat(QUID_RATE,0.toFloat())
+    }
+
+    fun getPENY():Float{
+        return preference.getFloat(PENY_RATE,0.toFloat())
+    }
+
+    fun getDOLR():Float{
+        return preference.getFloat(DOLR_RATE,0.toFloat())
+    }
+
+    fun getSHIL():Float{
+        return preference.getFloat(SHIL_RATE,0.toFloat())
+    }
+
+    fun setRates(quid:Float,dolr:Float,shil:Float,peny:Float){
+        val editor = preference.edit()
+        editor.putFloat(QUID_RATE,quid)
+        editor.putFloat(PENY_RATE,peny)
+        editor.putFloat(SHIL_RATE,shil)
+        editor.putFloat(DOLR_RATE,dolr)
+        editor.apply()
+    }
 
     fun getEmail():String{
         return preference.getString(RECENT_EMAIL,"")
@@ -25,13 +56,23 @@ class MySharedPrefs(context: Context){
         editor.apply()
     }
 
+    fun getPassword():String{
+        return preference.getString(RECENT_PASSWORD,"")
+    }
+
+    fun setPassword(password:String){
+        val editor = preference.edit()
+        editor.putString(RECENT_PASSWORD,password)
+        editor.apply()
+    }
+
     fun getGoldSum() : Float{
         return preference.getFloat(GOLD_VALUE,zeroFloat)
     }
 
     fun addGold(gold:Float){
         val editor = preference.edit()
-        var quickGold:Float = getGoldSum() + gold
+        val quickGold:Float = getGoldSum() + gold
         editor.putFloat(GOLD_VALUE,quickGold )
         editor.apply()
     }

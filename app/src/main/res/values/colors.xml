@@ -12,5 +12,5 @@
     <color name="mapbpxGrayLight">#c6d2e1</color>
 
     <color name="mapDownloadBackgroundFALSE">#f02050</color>
-    <color name="mapDownloadBackGroundTRUE">#229999</color>
+    <color name="mapDownloadBackGroundTRUE">#00FF33</color>
 </resources>

@@ -26,6 +26,11 @@ class LoginScreen : AppCompatActivity() {
         mAuth = FirebaseAuth.getInstance()
         if(mySharedPrefs.getEmail() != "") {
             email.setText(mySharedPrefs.getEmail())
+            switchemail.toggle()
+        }
+        if(mySharedPrefs.getPassword() != ""){
+            password.setText(mySharedPrefs.getPassword())
+            switchpassword.toggle()
         }
         button_login.setOnClickListener{view->
             loginUser()
@@ -76,8 +81,17 @@ class LoginScreen : AppCompatActivity() {
 
         mAuth.signInWithEmailAndPassword(myEmail,myPassword).addOnCompleteListener{task ->
             if(task.isSuccessful){
+                if (switchemail.isChecked) {
+                    mySharedPrefs.setEmail(myEmail)
+                }else{
+                    mySharedPrefs.setEmail("")
+                }
+                if (switchpassword.isChecked) {
+                    mySharedPrefs.setPassword(myPassword)
+                }else{
+                    mySharedPrefs.setPassword("")
+                }
                 toast("Log-in complete\nHave fun!")
-                mySharedPrefs.setEmail(myEmail)
                 startActivity(Intent(this,CoinzHome::class.java))
             }else{
                 toast("Log-in failed\nPlease check your details.")
