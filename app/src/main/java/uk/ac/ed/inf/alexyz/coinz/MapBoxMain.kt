@@ -364,6 +364,4 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
     }
 }
 
-private class Coin(val id:String,val currency:String,val value:Double,val latLng: LatLng )
-
 private class CoinAndMarker(val coin:Coin, val marker:Marker)

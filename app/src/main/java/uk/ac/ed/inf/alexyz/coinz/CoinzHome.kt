@@ -1,11 +1,7 @@
 package uk.ac.ed.inf.alexyz.coinz
 
-import android.content.DialogInterface
 import android.os.Bundle
-import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
-import android.view.Menu
-import android.view.MenuItem
 import android.content.Intent
 import android.support.v7.app.AlertDialog
 
@@ -15,7 +11,6 @@ import java.util.*
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.result.Result
 import com.google.firebase.auth.FirebaseAuth
-import kotlinx.android.synthetic.main.activity_map_box_main.*
 
 
 import org.jetbrains.anko.toast
@@ -50,7 +45,7 @@ class CoinzHome : AppCompatActivity() {
             }
         }
         walletButton.setOnClickListener{view->
-            toast(mypref.getPENY().toString())
+            startActivity(Intent(this, Wallet::class.java))
         }
         settingsButton.setOnClickListener {view ->
             mypref.addGold(35.toFloat())
