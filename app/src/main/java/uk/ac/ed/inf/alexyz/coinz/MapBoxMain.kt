@@ -120,6 +120,8 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
                     remainingCoinsAndMarkers.add(CoinAndMarker(a,map.addMarker(MarkerOptions().position(a.latLng).icon(myIcon).title("${a.currency} value : ${a.value}")))) }
             }
         }
+        val myIcon = IconFactory.getInstance(this).fromResource(R.mipmap.ic_bank_icon)
+        map.addMarker(MarkerOptions().position(LatLng(55.942963,-3.189014)).icon(myIcon).title("$$$ Central Bank $$$"))
         remainingCoins.clear()
     }
 

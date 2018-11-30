@@ -70,10 +70,9 @@ class MySharedPrefs(context: Context){
         return preference.getFloat(GOLD_VALUE,zeroFloat)
     }
 
-    fun addGold(gold:Float){
+    fun setGoldSum(gold:Float){
         val editor = preference.edit()
-        val quickGold:Float = getGoldSum() + gold
-        editor.putFloat(GOLD_VALUE,quickGold )
+        editor.putFloat(GOLD_VALUE,gold)
         editor.apply()
     }
 

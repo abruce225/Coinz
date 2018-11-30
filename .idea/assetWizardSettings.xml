@@ -84,14 +84,29 @@
                             <entry key="launcherLegacy">
                               <value>
                                 <PersistentState>
+                                  <option name="children">
+                                    <map>
+                                      <entry key="image">
+                                        <value>
+                                          <PersistentState>
+                                            <option name="values">
+                                              <map>
+                                                <entry key="paddingPercent" value="15" />
+                                              </map>
+                                            </option>
+                                          </PersistentState>
+                                        </value>
+                                      </entry>
+                                    </map>
+                                  </option>
                                   <option name="values">
                                     <map>
                                       <entry key="assetType" value="IMAGE" />
                                       <entry key="backgroundColor" value="00996e" />
                                       <entry key="cropped" value="true" />
-                                      <entry key="iconShape" value="VRECT" />
-                                      <entry key="imageAsset" value="$USER_HOME$/Downloads/PNGsForCoinz/coinzMap.jpg" />
-                                      <entry key="outputName" value="ic_actualMapView" />
+                                      <entry key="iconShape" value="NONE" />
+                                      <entry key="imageAsset" value="$USER_HOME$/Downloads/PNGsForCoinz/bank.png" />
+                                      <entry key="outputName" value="ic_bank_icon" />
                                     </map>
                                   </option>
                                 </PersistentState>

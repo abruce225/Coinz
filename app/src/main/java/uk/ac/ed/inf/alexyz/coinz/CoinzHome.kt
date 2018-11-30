@@ -10,7 +10,10 @@ import java.util.*
 
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.result.Result
+import com.google.firebase.FirebaseError
 import com.google.firebase.auth.FirebaseAuth
+
+import com.google.firebase.database.*
 
 
 import org.jetbrains.anko.toast
@@ -23,18 +26,39 @@ class CoinzHome : AppCompatActivity() {
 
     private val tag = "CoinzHome"
 
-    private  var goldSum: Float? = null
+    private  var goldSum: Float = 0.toFloat()
 
     private lateinit var mAuth: FirebaseAuth
 
+    private lateinit var myDataBase: FirebaseDatabase
+
+    private lateinit var mRootRef: DatabaseReference
+
     private val sdf = SimpleDateFormat("yyyy/MM/dd")
+
+    private lateinit var userName: String
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
-        val mypref = MySharedPrefs(this)
         super.onCreate(savedInstanceState)
         setContentView(layout.activity_coinz_home)
+        val mypref = MySharedPrefs(this)
+        getGeoJSON()
+        mAuth = FirebaseAuth.getInstance()
+        myDataBase = FirebaseDatabase.getInstance()
+        mRootRef = myDataBase.reference
+        userName = mAuth.currentUser?.uid ?: ""
+        mRootRef.child("users/"+userName+"/netWorth").addValueEventListener(object : ValueEventListener{
+            override fun onCancelled(p0: DatabaseError) {
+                toast("Couldn't access your data, please check your net connection.")
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+                if (p0!!.exists()){
+                    goldSum = p0.value.toString().toFloat()
+                }else{toast("You have no money yet! Go get some Coinz!")}
+            }
+        })
         playButton.setOnClickListener { view ->
             if (mypref.getTodayGEOJSON() == "" || mypref.getToday() != sdf.format(Date())){
                 toast("You haven't got the map for today yet!\nRe-attempting download now.")
@@ -48,14 +72,26 @@ class CoinzHome : AppCompatActivity() {
             startActivity(Intent(this, Wallet::class.java))
         }
         settingsButton.setOnClickListener {view ->
-            mypref.addGold(35.toFloat())
-            goldSum = mypref.getGoldSum()
+            mRootRef.child("users/"+userName+"/netWorth").addValueEventListener(object : ValueEventListener{
+                override fun onCancelled(p0: DatabaseError) {
+                    toast("Couldn't access your data, please check your net connection.")
+                }
+
+                override fun onDataChange(p0: DataSnapshot) {
+                    if (p0!!.exists()){
+                        goldSum = p0.value.toString().toFloat()
+                    }else{toast("fail")}
+                }
+            })
+            mRootRef.child("users").child(userName).child("netWorth").setValue(goldSum+50.0)
             toast(goldSum.toString())
+
         }
         tapBarMenuHome.setOnClickListener{view ->
             tapBarMenuHome.toggle()
         }
         userProfile.setOnClickListener { view ->
+            mypref.setGoldSum(goldSum)
             startActivity(Intent(this, UserProfile::class.java))
         }
         displayRatesHome.setOnClickListener{view->
@@ -105,8 +141,11 @@ class CoinzHome : AppCompatActivity() {
     }
 
     override fun onStart() {
+        val mypref = MySharedPrefs(this)
         super.onStart()
-        getGeoJSON()
-        mAuth = FirebaseAuth.getInstance()
+        if(mypref.getToday() != sdf.format(Date())){
+            toast("Your map is now out of date, updating now")
+            getGeoJSON()
+        }
     }
 }
