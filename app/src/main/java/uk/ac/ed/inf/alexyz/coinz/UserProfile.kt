@@ -22,6 +22,6 @@ class UserProfile : AppCompatActivity() {
         mAuth = FirebaseAuth.getInstance()
         val mypref = MySharedPrefs(this)
         tvName.setText("Logged in as: ${mAuth.currentUser?.email}")
-        tvDescription.setText("Current NET Worth: ${mypref.getGoldSum()}")
+        tvDescription.setText("Current NET Worth: ${mypref.getGoldSum().toInt()}")
     }
 }

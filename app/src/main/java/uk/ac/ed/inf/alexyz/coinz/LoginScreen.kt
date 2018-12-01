@@ -7,6 +7,7 @@ import android.text.TextUtils
 import android.widget.Button
 import android.widget.EditText
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.activity_login_screen.*
 import org.jetbrains.anko.toast
 
@@ -15,6 +16,9 @@ class LoginScreen : AppCompatActivity() {
     private lateinit var mAuth: FirebaseAuth
     private lateinit var password: EditText
     private lateinit var email: EditText
+    private lateinit var myDataBase: FirebaseDatabase
+    private lateinit var userName: String
+    private lateinit var mRootRef: DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -24,6 +28,9 @@ class LoginScreen : AppCompatActivity() {
         email = findViewById(R.id.signup_email_input)
         password = findViewById(R.id.signup_password_input)
         mAuth = FirebaseAuth.getInstance()
+        myDataBase = FirebaseDatabase.getInstance()
+        mRootRef = myDataBase.reference
+        userName = mAuth.currentUser?.uid ?: ""
         if(mySharedPrefs.getEmail() != "") {
             email.setText(mySharedPrefs.getEmail())
             switchemail.toggle()

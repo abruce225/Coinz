@@ -26,7 +26,7 @@ class CoinzHome : AppCompatActivity() {
 
     private val tag = "CoinzHome"
 
-    private  var goldSum: Float = 0.toFloat()
+    private  var goldSum: Double = 0.0
 
     private lateinit var mAuth: FirebaseAuth
 
@@ -55,8 +55,10 @@ class CoinzHome : AppCompatActivity() {
 
             override fun onDataChange(p0: DataSnapshot) {
                 if (p0!!.exists()){
-                    goldSum = p0.value.toString().toFloat()
-                }else{toast("You have no money yet! Go get some Coinz!")}
+                    goldSum = p0.value.toString().toDouble()
+                }else{
+                    toast("You have no money yet! Go get some Coinz!")
+                }
             }
         })
         playButton.setOnClickListener { view ->
@@ -72,17 +74,6 @@ class CoinzHome : AppCompatActivity() {
             startActivity(Intent(this, Wallet::class.java))
         }
         settingsButton.setOnClickListener {view ->
-            mRootRef.child("users/"+userName+"/netWorth").addValueEventListener(object : ValueEventListener{
-                override fun onCancelled(p0: DatabaseError) {
-                    toast("Couldn't access your data, please check your net connection.")
-                }
-
-                override fun onDataChange(p0: DataSnapshot) {
-                    if (p0!!.exists()){
-                        goldSum = p0.value.toString().toFloat()
-                    }else{toast("fail")}
-                }
-            })
             mRootRef.child("users").child(userName).child("netWorth").setValue(goldSum+50.0)
             toast(goldSum.toString())
 
@@ -91,8 +82,8 @@ class CoinzHome : AppCompatActivity() {
             tapBarMenuHome.toggle()
         }
         userProfile.setOnClickListener { view ->
-            mypref.setGoldSum(goldSum)
-            startActivity(Intent(this, UserProfile::class.java))
+            mypref.setGoldSum(goldSum.toFloat())
+            startUserPage()
         }
         displayRatesHome.setOnClickListener{view->
             val builder: AlertDialog.Builder = AlertDialog.Builder(this, android.R.style.ThemeOverlay_Material_Dialog).apply {
@@ -101,6 +92,9 @@ class CoinzHome : AppCompatActivity() {
                 show()
             }
         }
+    }
+    private fun startUserPage(){
+        startActivity(Intent(this, UserProfile::class.java))
     }
 
     private fun getGeoJSON(){
