@@ -1,9 +1,11 @@
 package uk.ac.ed.inf.alexyz.coinz
 
+import android.content.DialogInterface
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.content.Intent
 import android.support.v7.app.AlertDialog
+import android.widget.Toast
 
 import kotlinx.android.synthetic.main.activity_coinz_home.*
 import java.util.*
@@ -47,6 +49,9 @@ class CoinzHome : AppCompatActivity() {
         myDataBase = FirebaseDatabase.getInstance()
         mRootRef = myDataBase.reference
         userName = mAuth.currentUser?.uid ?: ""
+        if(mypref.getPP()){
+            showInformationPopup()
+        }
         getGeoJSON()
         mRootRef.child("users/"+userName+"/netWorth").addValueEventListener(object : ValueEventListener{
             override fun onCancelled(p0: DatabaseError) {
@@ -74,27 +79,27 @@ class CoinzHome : AppCompatActivity() {
             startActivity(Intent(this, Wallet::class.java))
         }
         settingsButton.setOnClickListener {view ->
-            mRootRef.child("users").child(userName).child("netWorth").setValue(goldSum)
-            toast(goldSum.toString())
-
+            startActivity(Intent(this,MySettings::class.java))
         }
         tapBarMenuHome.setOnClickListener{view ->
             tapBarMenuHome.toggle()
         }
-        userProfile.setOnClickListener { view ->
-            mypref.setGoldSum(goldSum.toFloat())
-            startUserPage()
+        openWalletHome.setOnClickListener{view ->
+            startActivity(Intent(this, Wallet::class.java))
+        }
+        openPopupHome.setOnClickListener{view ->
+            showInformationPopup()
+        }
+        openUserProfileHome.setOnClickListener{view->
+            startActivity(Intent(this,UserProfile::class.java))
         }
         displayRatesHome.setOnClickListener{view->
-            val builder: AlertDialog.Builder = AlertDialog.Builder(this, android.R.style.ThemeOverlay_Material_Dialog).apply {
+            AlertDialog.Builder(this, android.R.style.ThemeOverlay_Material_Dialog).apply {
                 setTitle("Exc Rates For: ${sdf.format(Date())}")
                 setMessage("SHIL: ${mypref.getSHIL()}\nDOLR: ${mypref.getDOLR()}\nPENY: ${mypref.getPENY()}\nQUID: ${mypref.getQUID()}\n")
                 show()
             }
         }
-    }
-    private fun startUserPage(){
-        startActivity(Intent(this, UserProfile::class.java))
     }
 
     private fun getGeoJSON(){
@@ -142,5 +147,16 @@ class CoinzHome : AppCompatActivity() {
             toast("Your map is now out of date, updating now")
             getGeoJSON()
         }
+    }
+    private fun showInformationPopup(){
+        val builder = AlertDialog.Builder(this)
+        val positiveButtonClick = { _: DialogInterface, _: Int ->}
+        builder.setTitle("Information for Coinz")
+        builder.setMessage("Welcome to Coinz! You're currently on the home screen, where you have fast access to everythign within the app. Simply tap a tile to get started!\n" +
+                "\nThere's also a button at the bottom of the screen you may press at any time, it'll bring up shortcuts to your wallet and profile, along with access to this" +
+                " popup if you want to check the info again.\n\nHave fun!")
+        builder.setPositiveButton("Got it!", DialogInterface.OnClickListener(positiveButtonClick))
+        builder.create()
+        builder.show()
     }
 }

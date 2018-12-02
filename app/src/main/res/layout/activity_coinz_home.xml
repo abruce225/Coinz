@@ -120,28 +120,28 @@
         app:tbm_backgroundColor="@color/mainTheme">
 
         <ImageButton
-            android:id="@+id/collectRandomHome"
+            android:id="@+id/displayRatesHome"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@color/myGold"
-            android:backgroundTint="@color/mainTheme"
-            android:paddingLeft="10dp"
             android:paddingTop="10dp"
             android:paddingBottom="10dp"
-            android:src="@drawable/ic_exchangerate" />
+            android:paddingLeft="10dp"
+            android:src="@drawable/ic_exchangerate"
+            android:backgroundTint="@color/mainTheme"
+            android:background="@color/myGold"/>
 
 
         <ImageButton
-            android:id="@+id/resetDayHome"
+            android:id="@+id/openPopupHome"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@color/myGold"
-            android:backgroundTint="@color/mainTheme"
             android:paddingTop="10dp"
             android:paddingBottom="10dp"
-            android:src="@drawable/ic_exclamation" />
+            android:src="@drawable/ic_popup"
+            android:backgroundTint="@color/mainTheme"
+            android:background="@color/myGold" />
 
         <Space
             android:layout_width="56dp"
@@ -152,24 +152,24 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@color/myGold"
-            android:backgroundTint="@color/mainTheme"
             android:paddingTop="10dp"
             android:paddingBottom="10dp"
-            android:src="@drawable/ic_wallet_logo" />
+            android:src="@drawable/ic_wallet_logo"
+            android:backgroundTint="@color/mainTheme"
+            android:background="@color/myGold"/>
 
 
         <ImageButton
-            android:id="@+id/displayRatesHome"
+            android:id="@+id/openUserProfileHome"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@color/myGold"
-            android:backgroundTint="@color/mainTheme"
             android:paddingTop="10dp"
             android:paddingRight="10dp"
             android:paddingBottom="10dp"
-            android:src="@drawable/ic_exchangerate" />
+            android:src="@drawable/ic_profilebutton"
+            android:backgroundTint="@color/mainTheme"
+            android:background="@color/myGold" />
 
     </com.michaldrabik.tapbarmenulib.TapBarMenu>
 

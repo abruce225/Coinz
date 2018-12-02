@@ -2,11 +2,13 @@ package uk.ac.ed.inf.alexyz.coinz
 
 //android
 import android.annotation.SuppressLint
+import android.content.DialogInterface
 import android.content.Intent
 import android.location.Location
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.google.gson.Gson
@@ -31,6 +33,7 @@ import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.CameraMode
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.RenderMode
+import kotlinx.android.synthetic.main.activity_coinz_home.*
 
 import kotlinx.android.synthetic.main.activity_map_box_main.*
 
@@ -52,8 +55,6 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
     private lateinit var userName: String
     private lateinit var mRootRef: DatabaseReference
 
-
-
     private var collectedCoins = arrayListOf<Coin>()
     private var remainingCoins = arrayListOf<Coin>()
     private var remainingCoinsAndMarkers = arrayListOf<CoinAndMarker>()
@@ -73,6 +74,9 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
         val sharedPrefs = MySharedPrefs(this)
         todayGJS = sharedPrefs.getTodayGEOJSON()
         userName = mAuth.currentUser?.uid ?: ""
+        if(sharedPrefs.getPP()){
+            showInformationPopup()
+        }
         mRootRef.child("users/$userName/collectedCoins").addValueEventListener(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
                 toast("Couldn't access your data, please check your net connection.")
@@ -127,15 +131,11 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
         openWallet.setOnClickListener{view ->
             startActivity(Intent(this, Wallet::class.java))
         }
-        resetDay.setOnClickListener{view ->
-
+        openPopup.setOnClickListener{view ->
+            showInformationPopup()
         }
-        collectRandom.setOnClickListener{view->
-            if(remainingCoinsAndMarkers.size > 0){
-                collectCoin(remainingCoinsAndMarkers[0])
-            }  else {
-                toast("all markers collected")
-            }
+        openUserProfile.setOnClickListener{view->
+            startActivity(Intent(this,UserProfile::class.java))
         }
         displayRates.setOnClickListener{view->
             AlertDialog.Builder(this, android.R.style.ThemeOverlay_Material_Dialog).apply {
@@ -363,6 +363,18 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
     override fun onLowMemory() {
         super.onLowMemory()
         mapView.onLowMemory()
+    }
+
+    private fun showInformationPopup(){
+        val builder = AlertDialog.Builder(this)
+        val positiveButtonClick = { _: DialogInterface, _: Int -> }
+        builder.setTitle("Information for MapBox Activity.")
+        builder.setMessage("Walk around the map to collect coins! As you get within 25 metres of a coin you'll pick it up automatically.\n" +
+                "\nYou can press the button at the bottom of your screen for quick access to various helpful pieces of information, as well as your wallet.\n" +
+                "\nTo cash any coins in from your wallet, you must head to the central bank! Get within 50 metres to cash in your coins.")
+        builder.setPositiveButton("Got it!", DialogInterface.OnClickListener(positiveButtonClick))
+        builder.create()
+        builder.show()
     }
 }
 

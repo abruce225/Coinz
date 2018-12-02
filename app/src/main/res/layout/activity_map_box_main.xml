@@ -40,7 +40,7 @@
         mapbox:layout_constraintVertical_bias="1.0">
 
         <ImageButton
-            android:id="@+id/collectRandom"
+            android:id="@+id/displayRates"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -53,13 +53,13 @@
 
 
         <ImageButton
-            android:id="@+id/resetDay"
+            android:id="@+id/openPopup"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:paddingTop="10dp"
             android:paddingBottom="10dp"
-            android:src="@drawable/ic_exclamation"
+            android:src="@drawable/ic_popup"
             android:backgroundTint="@color/mainTheme"
             android:background="@color/myGold" />
 
@@ -80,14 +80,14 @@
 
 
         <ImageButton
-            android:id="@+id/displayRates"
+            android:id="@+id/openUserProfile"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:paddingTop="10dp"
             android:paddingRight="10dp"
             android:paddingBottom="10dp"
-            android:src="@drawable/ic_exchangerate"
+            android:src="@drawable/ic_profilebutton"
             android:backgroundTint="@color/mainTheme"
             android:background="@color/myGold" />
 

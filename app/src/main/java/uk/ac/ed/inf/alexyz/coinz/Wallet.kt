@@ -151,7 +151,7 @@ class Wallet : AppCompatActivity() {
             mll.latitude = sharedPrefs.getLAT().toDouble()
             mll.longitude = sharedPrefs.getLON().toDouble()
             toast("lat: ${mll.latitude} \nlon: ${mll.longitude}")
-            if(LatLng(55.942963,-3.189014).distanceTo(mll) < 1000) {
+            if(LatLng(55.942963,-3.189014).distanceTo(mll) < 50) {
                 cashInAllDeposit()
                 listView.getItemAtPosition(0)
             }else{
@@ -288,6 +288,8 @@ class Wallet : AppCompatActivity() {
         builder.setMessage("Unfortunately, this coin has expired. Would you like me to remove all expired coins from your wallet?")
         builder.setPositiveButton("Remove" ,DialogInterface.OnClickListener(function = positiveButtonClick))
         builder.setNegativeButton("Keep" ,DialogInterface.OnClickListener(function = negativeButtonClick))
+        builder.create()
+        builder.show()
     }
 
     private fun removeExpired(){

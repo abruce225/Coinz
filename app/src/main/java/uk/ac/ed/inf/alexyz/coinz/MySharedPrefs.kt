@@ -5,7 +5,6 @@ import android.content.Context
 class MySharedPrefs(context: Context) {
 
     val PREFERENCE_NAME = "WALLET"
-    val GOLD_VALUE = "GoldSum"
     val TODAY_DATE = "Today"
     val CURRENT_GEOJSON = "TodayGEOJSON"
     val RECENT_EMAIL = "RecentEmail"
@@ -16,10 +15,21 @@ class MySharedPrefs(context: Context) {
     val QUID_RATE = "quidRate"
     val LATI = "lat"
     val LONG = "lon"
+    val POPUP = "wantsPopup"
 
     val zeroFloat: Float = 0.toFloat()
 
     val preference = context.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE)
+
+    fun setPP(b:Boolean){
+        val editor = preference.edit()
+        editor.putBoolean(POPUP,b)
+        editor.apply()
+    }
+    fun getPP():Boolean{
+
+        return preference.getBoolean(POPUP,true)
+    }
 
     fun getLAT(): String {
         return preference.getString(LATI, "0")
@@ -83,16 +93,6 @@ class MySharedPrefs(context: Context) {
     fun setPassword(password: String) {
         val editor = preference.edit()
         editor.putString(RECENT_PASSWORD, password)
-        editor.apply()
-    }
-
-    fun getGoldSum(): Float {
-        return preference.getFloat(GOLD_VALUE, zeroFloat)
-    }
-
-    fun setGoldSum(gold: Float) {
-        val editor = preference.edit()
-        editor.putFloat(GOLD_VALUE, gold)
         editor.apply()
     }
 
