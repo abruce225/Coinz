@@ -2,10 +2,11 @@ package uk.ac.ed.inf.alexyz.coinz
 
 //android
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.location.Location
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
-import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.google.gson.Gson
@@ -30,7 +31,6 @@ import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.CameraMode
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.RenderMode
-import kotlinx.android.synthetic.main.activity_coinz_home.*
 
 import kotlinx.android.synthetic.main.activity_map_box_main.*
 
@@ -58,6 +58,7 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
     private var remainingCoins = arrayListOf<Coin>()
     private var remainingCoinsAndMarkers = arrayListOf<CoinAndMarker>()
 
+    @SuppressLint("SimpleDateFormat")
     private val sdf = SimpleDateFormat("yyyy/MM/dd")
 
 
@@ -77,7 +78,7 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
                 toast("Couldn't access your data, please check your net connection.")
             }
             override fun onDataChange(p0: DataSnapshot) {
-                if (p0!!.exists()){
+                if (p0.exists()){
                     val myGSON = Gson()
                     val json = p0.value.toString()
                     if (json != "") {
@@ -95,7 +96,7 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
                 toast("Couldn't access your data, please check your net connection.")
             }
             override fun onDataChange(p0: DataSnapshot) {
-                if (p0!!.exists()) {
+                if (p0.exists()) {
                     val myGSON = Gson()
                     val json = p0.value.toString()
                     if (json != "") {
@@ -124,7 +125,7 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
             tapBarMenu.toggle()
         }
         openWallet.setOnClickListener{view ->
-            toast("TODO OPEN WALLET")
+            startActivity(Intent(this, Wallet::class.java))
         }
         resetDay.setOnClickListener{view ->
 
@@ -137,7 +138,7 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
             }
         }
         displayRates.setOnClickListener{view->
-            val builder: AlertDialog.Builder = AlertDialog.Builder(this, android.R.style.ThemeOverlay_Material_Dialog).apply {
+            AlertDialog.Builder(this, android.R.style.ThemeOverlay_Material_Dialog).apply {
                 setTitle("Exc Rates For: ${sdf.format(Date())}")
                 setMessage("SHIL: ${sharedPrefs.getSHIL()}\nDOLR: ${sharedPrefs.getDOLR()}\nPENY: ${sharedPrefs.getPENY()}\nQUID: ${sharedPrefs.getQUID()}\n")
                 show()
