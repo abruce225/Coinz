@@ -43,11 +43,11 @@ class CoinzHome : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(layout.activity_coinz_home)
         val mypref = MySharedPrefs(this)
-        getGeoJSON()
         mAuth = FirebaseAuth.getInstance()
         myDataBase = FirebaseDatabase.getInstance()
         mRootRef = myDataBase.reference
         userName = mAuth.currentUser?.uid ?: ""
+        getGeoJSON()
         mRootRef.child("users/"+userName+"/netWorth").addValueEventListener(object : ValueEventListener{
             override fun onCancelled(p0: DatabaseError) {
                 toast("Couldn't access your data, please check your net connection.")
@@ -74,7 +74,7 @@ class CoinzHome : AppCompatActivity() {
             startActivity(Intent(this, Wallet::class.java))
         }
         settingsButton.setOnClickListener {view ->
-            mRootRef.child("users").child(userName).child("netWorth").setValue(goldSum+50.0)
+            mRootRef.child("users").child(userName).child("netWorth").setValue(goldSum)
             toast(goldSum.toString())
 
         }
@@ -100,8 +100,9 @@ class CoinzHome : AppCompatActivity() {
     private fun getGeoJSON(){
         val mypref = MySharedPrefs(this)
         if(mypref.getToday() != sdf.format(Date()) || mypref.getTodayGEOJSON() == "") {
-            mypref.setCollectedCoins("")
-            mypref.setRemainingCoins("")
+            mRootRef.child("users").child(userName).child("collectedCoins").setValue("")
+            mRootRef.child("users").child(userName).child("remainingCoins").setValue("")
+            mRootRef.child("users").child(userName).child("date").setValue(sdf.format(Date()))
             mypref.setTodayGEOJSON("")
             mypref.setRates(0.toFloat(),0.toFloat(),0.toFloat(),0.toFloat())
             mypref.setToday(sdf.format(Date()))

@@ -6,6 +6,8 @@ import android.location.Location
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity;
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.*
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
@@ -46,6 +48,11 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
     private lateinit var permissionManager: PermissionsManager
     private lateinit var originLocation: Location
     private lateinit var todayGJS: String
+    private lateinit var mAuth: FirebaseAuth
+    private lateinit var userName: String
+    private lateinit var mRootRef: DatabaseReference
+
+
 
     private var collectedCoins = arrayListOf<Coin>()
     private var remainingCoins = arrayListOf<Coin>()
@@ -53,17 +60,53 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
 
     private val sdf = SimpleDateFormat("yyyy/MM/dd")
 
+
     private var locationEngine: LocationEngine? = null
     private var locationLayerPlugin: LocationLayerPlugin? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map_box_main)
+        mAuth = FirebaseAuth.getInstance()
+        mRootRef = FirebaseDatabase.getInstance().reference
         val sharedPrefs = MySharedPrefs(this)
         todayGJS = sharedPrefs.getTodayGEOJSON()
-        if (sharedPrefs.getCollectedCoins() != "" || sharedPrefs.getRemainingCoins() != ""){
-            getCoins()
-        }
+        userName = mAuth.currentUser?.uid ?: ""
+        mRootRef.child("users/$userName/collectedCoins").addValueEventListener(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+                toast("Couldn't access your data, please check your net connection.")
+            }
+            override fun onDataChange(p0: DataSnapshot) {
+                if (p0!!.exists()){
+                    val myGSON = Gson()
+                    val json = p0.value.toString()
+                    if (json != "") {
+                        val coinType = object : TypeToken<List<Coin>>() {}.type
+                        collectedCoins = myGSON.fromJson(json, coinType)
+                    } else {
+                        collectedCoins.clear()
+                    }
+
+                }
+            }
+        })
+        mRootRef.child("users/$userName/remainingCoins").addValueEventListener(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+                toast("Couldn't access your data, please check your net connection.")
+            }
+            override fun onDataChange(p0: DataSnapshot) {
+                if (p0!!.exists()) {
+                    val myGSON = Gson()
+                    val json = p0.value.toString()
+                    if (json != "") {
+                        val coinType = object : TypeToken<List<Coin>>() {}.type
+                        remainingCoins = myGSON.fromJson(json, coinType)
+                    } else {
+                        remainingCoins.clear()
+                    }
+                }
+            }
+        })
         Mapbox.getInstance(applicationContext, getString(R.string.access_token))
         mapView = findViewById(R.id.mapView)
         mapView.onCreate(savedInstanceState)
@@ -84,11 +127,11 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
             toast("TODO OPEN WALLET")
         }
         resetDay.setOnClickListener{view ->
-            resetCoins()
+
         }
         collectRandom.setOnClickListener{view->
             if(remainingCoinsAndMarkers.size > 0){
-                removeMarker(remainingCoinsAndMarkers[0])
+                collectCoin(remainingCoinsAndMarkers[0])
             }  else {
                 toast("all markers collected")
             }
@@ -141,7 +184,7 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
             val longitude: Double = holder.getDouble(0)
             val latitude: Double = holder.getDouble(1)
             val coinLatLng = LatLng(latitude,longitude)
-            val tempCoin = Coin(id,currency,value,coinLatLng)
+            val tempCoin = Coin(id,currency,value,coinLatLng,sdf.format(Date()))
             remainingCoins.add(tempCoin)
         }
     } //this function creates all 50 coins from the provided GEOJSON, and adds them to remainingCoins
@@ -166,20 +209,9 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
         map.removeMarker(coinAndMarker.marker)
         collectedCoins.add(coinAndMarker.coin)
         remainingCoinsAndMarkers.remove(coinAndMarker)
+        setCoins()
     }
 
-    private fun getCoins(){
-        val sharedPrefs = MySharedPrefs(this)
-        if (sdf.format(Date())==sharedPrefs.getToday()){
-            getRemaining()
-            getCollected()
-        }else{
-            toast("You don't have the current map.\nPlease return to the main menu to download it.")
-            sharedPrefs.setRemainingCoins("")
-            sharedPrefs.setCollectedCoins("")
-            sharedPrefs.setTodayGEOJSON("")
-        }
-    }
 
     private fun setCoins(){
         val sharedPrefs = MySharedPrefs(this)
@@ -187,58 +219,24 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
             setRemaining()
             setCollected()
         }else{
-            toast("You don't have the current map.\nPlease return to the main menu to download it.")
-            sharedPrefs.setRemainingCoins("")
-            sharedPrefs.setCollectedCoins("")
-            sharedPrefs.setTodayGEOJSON("")
+            toast("You don't have the current map.\nReturning to the main menu to download it now.")
+            finish()
         }
     }
 
-    private fun setCollected(){
-        for (a in remainingCoinsAndMarkers){
-            remainingCoins.add(a.coin)
-        }
-        val sharedPrefs = MySharedPrefs(this)
+    private fun setCollected() {
         val myGSON = Gson()
         val json = myGSON.toJson(collectedCoins)
-        sharedPrefs.setCollectedCoins(json)
-        remainingCoins.clear()
-
+        mRootRef.child("users").child(userName).child("collectedCoins").setValue(json)
     }
-
-    private fun getCollected(){
-        val sharedPrefs = MySharedPrefs(this)
-        val myGSON = Gson()
-        val json = sharedPrefs.getCollectedCoins()
-        if (json != "") {
-            val coinType = object : TypeToken<List<Coin>>() {}.type
-            collectedCoins = myGSON.fromJson(json, coinType)
-        } else {
-            collectedCoins.clear()
-        }
-    }
-
 
     private fun setRemaining(){
-        val sharedPrefs = MySharedPrefs(this)
+        remainingCoins.clear()
         for (a in remainingCoinsAndMarkers){remainingCoins.add(a.coin)}
         val myGSON = Gson()
         val json = myGSON.toJson(remainingCoins)
-        sharedPrefs.setRemainingCoins(json)
+        mRootRef.child("users").child(userName).child("remainingCoins").setValue(json)
         remainingCoins.clear()
-    }
-
-    private fun getRemaining(){
-        val sharedPrefs = MySharedPrefs(this)
-        val myGSON = Gson()
-        val json = sharedPrefs.getRemainingCoins()
-        if (json != ""){
-            val coinType = object : TypeToken<List<Coin>>() {}.type
-            remainingCoins = myGSON.fromJson(json,coinType)
-        }else{
-            remainingCoins.clear()
-        }
-
     }
 
     private fun enableLocation(){
@@ -267,6 +265,7 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
         } else {
             locationEngine?.addLocationEngineListener(this)
         }
+
     }
 
     @SuppressLint("MissingPermission")
@@ -275,7 +274,8 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
         locationLayerPlugin?.setLocationLayerEnabled(true)
         locationLayerPlugin?.cameraMode = CameraMode.TRACKING
         locationLayerPlugin?.renderMode = RenderMode.NORMAL
-
+        val lifecycle = lifecycle
+        lifecycle.addObserver(locationLayerPlugin!!)
     }
 
     private fun setCameraPosition(location: Location){
@@ -288,8 +288,11 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
     }
 
     override fun onLocationChanged(location: Location?) {
+        val mySharedPrefs = MySharedPrefs(this)
         location?.let {
             originLocation = location
+            mySharedPrefs.setLAT(location.latitude.toString())
+            mySharedPrefs.setLON(location.longitude.toString())
             checkIfNear(LatLng(location.latitude,location.longitude))
         }
     }
@@ -310,59 +313,55 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
 
     @SuppressWarnings("MissingPermission")
     override fun onStart() {
+        mapView.onStart()
         super.onStart()
         if (PermissionsManager.areLocationPermissionsGranted(this)){
             locationEngine?.requestLocationUpdates()
             locationLayerPlugin?.onStart()
         }
-        mapView.onStart()
+        if (locationEngine != null) {
+            try {
+                locationEngine!!.requestLocationUpdates()
+            } catch (ignored: SecurityException) {
+            }
+            locationEngine!!.addLocationEngineListener(this)
+        }
+
     }
 
     override fun onPause() {
         super.onPause()
-        locationEngine?.removeLocationUpdates()
         mapView.onPause()
+        locationEngine?.removeLocationUpdates()
     }
 
     @SuppressWarnings("MissingPermission")
     override fun onResume() {
         super.onResume()
-        locationEngine?.requestLocationUpdates()
         mapView.onResume()
+        locationEngine?.requestLocationUpdates()
     }
 
     override fun onStop() {
         super.onStop()
+        mapView.onStop()
         locationEngine?.removeLocationUpdates()
         locationEngine?.deactivate()
-        mapView.onStop()
-        setRemaining()
-        setCollected()
+        if (locationEngine != null) {
+            locationEngine!!.removeLocationEngineListener(this)
+            locationEngine!!.removeLocationUpdates()
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
         locationEngine?.deactivate()
         mapView.onDestroy()
-        setRemaining()
-        setCollected()
     }
 
     override fun onLowMemory() {
         super.onLowMemory()
         mapView.onLowMemory()
-    }
-
-    private fun resetCoins(){
-        val sharedPrefs = MySharedPrefs(this)
-        sharedPrefs.setRemainingCoins("")
-        sharedPrefs.setCollectedCoins("")
-        for (a in remainingCoinsAndMarkers){map.removeMarker(a.marker)}
-        collectedCoins.clear()
-        remainingCoins.clear()
-        remainingCoinsAndMarkers.clear()
-        createPins()
-        dropPins()
     }
 }
 
