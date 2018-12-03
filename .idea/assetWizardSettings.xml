@@ -19,8 +19,8 @@
                                   <option name="values">
                                     <map>
                                       <entry key="assetType" value="IMAGE" />
-                                      <entry key="imageAsset" value="$USER_HOME$/Downloads/PNGsForCoinz/wallet.png" />
-                                      <entry key="outputName" value="ic_wallet_logo" />
+                                      <entry key="imageAsset" value="$USER_HOME$/Downloads/PNGsForCoinz/home.png" />
+                                      <entry key="outputName" value="ic_home_icon" />
                                       <entry key="theme" value="CUSTOM" />
                                       <entry key="themeColor" value="d4af37" />
                                     </map>

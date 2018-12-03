@@ -2,6 +2,7 @@ package uk.ac.ed.inf.alexyz.coinz
 
 import android.annotation.SuppressLint
 import android.content.DialogInterface
+import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
@@ -58,6 +59,9 @@ class TradingScreen : AppCompatActivity() {
         mRootRef = myDataBase.reference
         userName = mAuth.currentUser?.uid ?: ""
         val sharedPrefs = MySharedPrefs(this)
+        if (sharedPrefs.getPP()){
+            showInformationPopup()
+        }
         quid = sharedPrefs.getQUID()
         dolr = sharedPrefs.getDOLR()
         shil = sharedPrefs.getSHIL()
@@ -86,6 +90,39 @@ class TradingScreen : AppCompatActivity() {
                 }
             }
         })
+        tapBarMenuTrade.setOnClickListener{view ->
+            tapBarMenuTrade.toggle()
+        }
+        openWalletTrade.setOnClickListener{view ->
+            startActivity(Intent(this, Wallet::class.java))
+        }
+        openPopupTrade.setOnClickListener{view ->
+            showInformationPopup()
+        }
+        openUserProfileTrade.setOnClickListener{view->
+            finish()
+        }
+        displayRatesTrade.setOnClickListener{view->
+            AlertDialog.Builder(this, android.R.style.ThemeOverlay_Material_Dialog).apply {
+                setTitle("Exc Rates For: ${sdf.format(Date())}")
+                setMessage("SHIL: ${sharedPrefs.getSHIL()}\nDOLR: ${sharedPrefs.getDOLR()}\nPENY: ${sharedPrefs.getPENY()}\nQUID: ${sharedPrefs.getQUID()}\n")
+                show()
+            }
+        }
+    }
+
+    private fun showInformationPopup(){
+        val builder = AlertDialog.Builder(this)
+        val positiveButtonClick = { _: DialogInterface, _: Int ->}
+        builder.setTitle("Information for Trading")
+        builder.setMessage("Welcome to the trading screen! From here you can send coins to your friends.\n" +
+                "\nTo send coins, you'll need to get your friends 8 character code from their profile. Once you have this, simply click on a coin in this activity and enter the code." +
+                "The coin will be automatically added to your friends account, so next time they play Coinz it'll be there waiting for them!\n" +
+                "\nMake sure you send the right coin to your friend, as there's no way to get a coin back once it's sent.\n" +
+                "\nBe aware that you can't send a friend a coin that they already have! Happy trading!")
+        builder.setPositiveButton("Got it!", DialogInterface.OnClickListener(positiveButtonClick))
+        builder.create()
+        builder.show()
     }
 
     @SuppressLint("ResourceAsColor")

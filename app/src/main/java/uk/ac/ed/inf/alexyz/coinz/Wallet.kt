@@ -3,7 +3,9 @@ package uk.ac.ed.inf.alexyz.coinz
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
 import android.os.Bundle
+import android.support.constraint.ConstraintLayout
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.view.LayoutInflater
@@ -23,6 +25,9 @@ import com.mapbox.mapboxsdk.geometry.LatLng
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
+import android.widget.LinearLayout
+
+
 
 @SuppressLint("MissingPermission", "SetTextI18n")
 class Wallet : AppCompatActivity() {
@@ -77,6 +82,9 @@ class Wallet : AppCompatActivity() {
         mRootRef = myDataBase.reference
         userName = mAuth.currentUser?.uid ?: ""
         val sharedPrefs = MySharedPrefs(this)
+        if(sharedPrefs.getPP()){
+            showInformationPopup()
+        }
         quid = sharedPrefs.getQUID()
         dolr = sharedPrefs.getDOLR()
         shil = sharedPrefs.getSHIL()
@@ -147,19 +155,43 @@ class Wallet : AppCompatActivity() {
         })
 
         buttonSyncSelected.setOnClickListener {
-            val mll = LatLng(0.0,0.0)
-            mll.latitude = sharedPrefs.getLAT().toDouble()
-            mll.longitude = sharedPrefs.getLON().toDouble()
-            toast("lat: ${mll.latitude} \nlon: ${mll.longitude}")
-            if(LatLng(55.942963,-3.189014).distanceTo(mll) < 50) {
-                cashInAllDeposit()
-                listView.getItemAtPosition(0)
+            if (depositBox.size > 0){
+                val mll = LatLng(0.0,0.0)
+                mll.latitude = sharedPrefs.getLAT().toDouble()
+                mll.longitude = sharedPrefs.getLON().toDouble()
+                if(LatLng(55.942963,-3.189014).distanceTo(mll) < 50) {
+                    cashInAllDeposit()
+                    listView.getItemAtPosition(0)
+                }else{
+                    toast("You must be at the central bank to cash in coins!")
+                }
             }else{
-                toast("You must be at the central bank to cash in coins!")
+                toast("No coins in your deposit box!")
             }
         }
-        textViewSubCons.setOnClickListener {
+        buttonSubCons.setOnClickListener {
             openDepositPopup()
+        }
+        tapBarMenuWallet.setOnClickListener{view ->
+            tapBarMenuWallet.toggle()
+        }
+        goHomeWallet.setOnClickListener{view ->
+            val intent = Intent(this, CoinzHome::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            startActivity(intent)
+        }
+        openPopupWallet.setOnClickListener{view ->
+            showInformationPopup()
+        }
+        openUserProfileWallet.setOnClickListener{view->
+            startActivity(Intent(this,UserProfile::class.java))
+        }
+        displayRatesWallet.setOnClickListener{view->
+            AlertDialog.Builder(this, android.R.style.ThemeOverlay_Material_Dialog).apply {
+                setTitle("Exc Rates For: ${sdf.format(Date())}")
+                setMessage("SHIL: ${sharedPrefs.getSHIL()}\nDOLR: ${sharedPrefs.getDOLR()}\nPENY: ${sharedPrefs.getPENY()}\nQUID: ${sharedPrefs.getQUID()}\n")
+                show()
+            }
         }
     }
 
@@ -189,7 +221,7 @@ class Wallet : AppCompatActivity() {
 
     private fun setTextViews(){
         textViewWallet.text = "Your wallet currently contain ${collectedCoins.size} coins.\nTap a row to add it to your deposit box!"
-        textViewSubCons.text = "Your deposit box currently contains ${depositBox.size} coins. Tap here to remove coins from your deposit box!"
+        buttonSubCons.text = "Deposit box:\n${depositBox.size} coins."
     }
     private fun returnSelectedToWallet(){
         for(a in returnToWallet){
@@ -299,5 +331,19 @@ class Wallet : AppCompatActivity() {
             }
         }
         listView.getItemAtPosition(0)
+    }
+    private fun showInformationPopup(){
+        val builder = AlertDialog.Builder(this)
+        val positiveButtonClick = { _: DialogInterface, _: Int ->}
+        builder.setTitle("Information for Wallet")
+        builder.setMessage("This is your wallet. When you collect coins they end up here! You can hold as many coins as you like in your wallet, however coins expire at midnight so make sure" +
+                " you cash them in before then." +
+                "\n\nYou can cash in up to 25 coins every day, so if you collect more you'll either have to let them expire or trade them to a friend! To trade open your profile from the main menu, " +
+                "or the button below.\n\nTo cash in coins you must be at the bank! It is located at the library, however you've got to be quick, as every coin may only be banked once per day. So" +
+                " if another player gets there first, you won't get any gold!" +
+                "\n\nTo remove coins from your deposit box, simply tap it!\n\nHave fun and collect fast!")
+        builder.setPositiveButton("Got it!", DialogInterface.OnClickListener(positiveButtonClick))
+        builder.create()
+        builder.show()
     }
 }

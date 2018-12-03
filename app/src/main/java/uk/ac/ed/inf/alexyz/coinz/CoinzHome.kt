@@ -75,6 +75,9 @@ class CoinzHome : AppCompatActivity() {
                 startActivity(mapboxintent)
             }
         }
+        userProfile.setOnClickListener{
+            startActivity(Intent(this,UserProfile::class.java))
+        }
         walletButton.setOnClickListener{view->
             startActivity(Intent(this, Wallet::class.java))
         }
