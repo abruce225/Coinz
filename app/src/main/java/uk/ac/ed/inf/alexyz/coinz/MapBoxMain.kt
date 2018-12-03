@@ -68,33 +68,33 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map_box_main)
-        mAuth = FirebaseAuth.getInstance()
+        mAuth = FirebaseAuth.getInstance() //initialise lateinit vars etc
         mRootRef = FirebaseDatabase.getInstance().reference
         val sharedPrefs = MySharedPrefs(this)
         todayGJS = sharedPrefs.getTodayGEOJSON()
         userName = mAuth.currentUser?.uid ?: ""
-        if(sharedPrefs.getPP()){
+        if(sharedPrefs.getPP()){ //display popup if user has requested them in settings
             showInformationPopup()
         }
-        mRootRef.child("users/$userName/date").addListenerForSingleValueEvent(object: ValueEventListener{
+        mRootRef.child("users/$userName/date").addListenerForSingleValueEvent(object: ValueEventListener{ //one time pull of most recent date that the user has played the game
             override fun onCancelled(p0: DatabaseError) {
                 toast("can't access your data right now")
             }
             override fun onDataChange(p0: DataSnapshot) {
-                databaseDate = if(p0.exists()){
+                databaseDate = if(p0.exists()){ //if the user has played before, set database date to that value, otherwise set it to an empty string
                     p0.value.toString()
                 }else{
                     ""
                 }
             }
         })
-        mRootRef.child("users/$userName/collectedCoins").addValueEventListener(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
+        mRootRef.child("users/$userName/collectedCoins").addValueEventListener(object : ValueEventListener { //this value is constantly updating, with potential for someone to trade a coin in as the player is playing
+            override fun onCancelled(p0: DatabaseError) { //every time it changes, we updated collected coins
                 toast("Couldn't access your data, please check your net connection.")
             }
             override fun onDataChange(p0: DataSnapshot) {
                 if (p0.exists()){
-                    val myGSON = Gson()
+                    val myGSON = Gson() //use of Gson to convert arraylist into string for storage and transfer. Gson slaps hard
                     val json = p0.value.toString()
                     if (json != "") {
                         val coinType = object : TypeToken<List<Coin>>() {}.type
@@ -106,8 +106,8 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
                 }
             }
         })
-        mRootRef.child("users/$userName/remainingCoins").addValueEventListener(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
+        mRootRef.child("users/$userName/remainingCoins").addValueEventListener(object : ValueEventListener {//same as collected coins, this allows us to keep tabs on which coins are remaining
+            override fun onCancelled(p0: DatabaseError) {                                                             //and in turn which coins should be rendered
                 toast("Couldn't access your data, please check your net connection.")
             }
             override fun onDataChange(p0: DataSnapshot) {
@@ -123,17 +123,17 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
                 }
             }
         })
-        Mapbox.getInstance(applicationContext, getString(R.string.access_token))
+        Mapbox.getInstance(applicationContext, getString(R.string.access_token)) //section that sets up mapbox and mapview
         mapView = findViewById(R.id.mapView)
         mapView.onCreate(savedInstanceState)
-        mapView.getMapAsync{ mapboxMap ->
+        mapView.getMapAsync{ mapboxMap -> //once map is set up, we need to create "pins" that allow us to draw on the map
             map = mapboxMap
             enableLocation()
-            if((sdf.format(Date())) != databaseDate){
+            if((sdf.format(Date())) != databaseDate){//if this is the users first session today, we must create a full set of pins from the geojson
                 createPins()
             }
-            dropPins()
-            map.uiSettings.setCompassMargins(100,150,100,100)
+            dropPins()//otherwise we can simply use the coins stored in remaining coins on the database to drop the markers on the map
+            map.uiSettings.setCompassMargins(100,150,100,100) //add compass for easy orientation
             map.uiSettings.setCompassFadeFacingNorth(false)
         }
         tapBarMenu.setOnClickListener{
@@ -178,6 +178,7 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
         val myIcon = IconFactory.getInstance(this).fromResource(R.mipmap.ic_bank_icon)
         map.addMarker(MarkerOptions().position(LatLng(55.942963,-3.189014)).icon(myIcon).title("$$$ Central Bank $$$"))
         remainingCoins.clear()
+        setCoins()
     }
 
     private fun createPins(){
@@ -232,8 +233,8 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
             setRemaining()
             setCollected()
         }else{
-            toast("You don't have the current map.\nReturning to the main menu to download it now.")
-            finish()
+            toast("You don't have the current map.\nRestarting app now.")
+            finishAffinity()
         }
     }
 

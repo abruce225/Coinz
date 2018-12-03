@@ -8,8 +8,8 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import kotlinx.android.synthetic.main.wallet_row.view.*
 
-class CoinAdapter(context: Context, collectedCoins: ArrayList<Coin>): BaseAdapter() {
-    private val mContext: Context = context
+class CoinAdapter(context: Context, collectedCoins: ArrayList<Coin>): BaseAdapter() { //to create a listView of coins, an adapter is required
+    private val mContext: Context = context //set up all values required to generate the scrollable xml, with info on coin value etc
     private var mcollectedCoins: ArrayList<Coin> = collectedCoins
     private val quid: Float
     private val dolr: Float
@@ -17,7 +17,7 @@ class CoinAdapter(context: Context, collectedCoins: ArrayList<Coin>): BaseAdapte
     private val peny: Float
 
     init{
-        val sharedPrefs = MySharedPrefs(mContext)
+        val sharedPrefs = MySharedPrefs(mContext) //pull values from sharedprefs
         quid = sharedPrefs.getQUID()
         dolr = sharedPrefs.getDOLR()
         shil = sharedPrefs.getSHIL()
@@ -25,8 +25,8 @@ class CoinAdapter(context: Context, collectedCoins: ArrayList<Coin>): BaseAdapte
     }
 
     @SuppressLint("ViewHolder", "SetTextI18n")
-    override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
-        val layoutInflater = LayoutInflater.from(mContext)
+    override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View { //create a row of info for every coin contained in dataset. This includes an image of the marker
+        val layoutInflater = LayoutInflater.from(mContext)                    //string indicating the id of the coin, along with its value in currency and gold.
         val rowMain = layoutInflater.inflate(R.layout.wallet_row,viewGroup,false)
         rowMain.coinID.text = mcollectedCoins[position].id
         if(mcollectedCoins[position].currency=="QUID"){
@@ -48,9 +48,9 @@ class CoinAdapter(context: Context, collectedCoins: ArrayList<Coin>): BaseAdapte
         return rowMain
     }
 
-    override fun getItem(position: Int): Any {
-        notifyDataSetChanged()
-        return "succesfully updated"
+    override fun getItem(position: Int): Any { //in order to update the dataset every time a coin was removed or altered, this function has been hijacked. I couldn't call
+        notifyDataSetChanged()                 //notifyDataSetChanged() on the adapter, however when calling getItemAtPosition, this function is called, so I used this workaround
+        return "successfully updated"          //to allow me to notify the adapter that the dataset had changed.
     }
 
     override fun getItemId(position: Int): Long {

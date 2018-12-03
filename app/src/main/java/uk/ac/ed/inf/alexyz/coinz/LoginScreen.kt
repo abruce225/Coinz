@@ -24,13 +24,13 @@ class LoginScreen : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login_screen)
         val mySharedPrefs = MySharedPrefs(this)
-        email = findViewById(R.id.signup_email_input)
+        email = findViewById(R.id.signup_email_input) //initialise our lateinit vars for Firebase authentication, along with our input views
         password = findViewById(R.id.signup_password_input)
         mAuth = FirebaseAuth.getInstance()
         myDataBase = FirebaseDatabase.getInstance()
         mRootRef = myDataBase.reference
         userName = mAuth.currentUser?.uid ?: ""
-        if(mySharedPrefs.getEmail() != "") {
+        if(mySharedPrefs.getEmail() != "") { //if the user has elected to store past info in shared prefs, we display it in the editTexts and toggle the switches on
             email.setText(mySharedPrefs.getEmail())
             switchemail.toggle()
         }
@@ -48,7 +48,7 @@ class LoginScreen : AppCompatActivity() {
 
     private fun registerUser(){
         val myEmail:String = email.text.toString().trim()
-        val myPassword:String = password.text.toString().trim()
+        val myPassword:String = password.text.toString().trim()//make sure both boxes are filled in, otherwise toast what the user must do to continue
 
         if(TextUtils.isEmpty(myPassword)) {
             toast("You must enter a password to register.")
@@ -60,9 +60,9 @@ class LoginScreen : AppCompatActivity() {
             return
         }
 
-        mAuth.createUserWithEmailAndPassword(myEmail,myPassword).addOnCompleteListener{task ->
+        mAuth.createUserWithEmailAndPassword(myEmail,myPassword).addOnCompleteListener{task -> //register the new user with firebase
             if(task.isSuccessful){
-                loginUser()
+                loginUser() //if successful, log them in
             }else{
                 toast("Registration Failed\nPlease try again.")
             }
@@ -71,11 +71,11 @@ class LoginScreen : AppCompatActivity() {
     }
 
     private fun loginUser(){
-        val mySharedPrefs = MySharedPrefs(this)
+        val mySharedPrefs = MySharedPrefs(this) //set up shared prefs, for storage of password and email. This is obv v insecure, but this is a prototype
         val myEmail:String = email.text.toString().trim()
         val myPassword:String = password.text.toString().trim()
 
-        if(TextUtils.isEmpty(myPassword)) {
+        if(TextUtils.isEmpty(myPassword)) { //same as above, make sure that the user has put in some input
             toast("You must enter a password to Log-in.")
             return
         }
@@ -85,8 +85,8 @@ class LoginScreen : AppCompatActivity() {
             return
         }
 
-        mAuth.signInWithEmailAndPassword(myEmail,myPassword).addOnCompleteListener{task ->
-            if(task.isSuccessful){
+        mAuth.signInWithEmailAndPassword(myEmail,myPassword).addOnCompleteListener{task -> //log in the user
+            if(task.isSuccessful){ //if successful, we need to know if the user wanted their details saved. Use the toggle buttons to determine this.
                 if (switchemail.isChecked) {
                     mySharedPrefs.setEmail(myEmail)
                 }else{
@@ -98,9 +98,9 @@ class LoginScreen : AppCompatActivity() {
                     mySharedPrefs.setPassword("")
                 }
                 toast("Log-in complete\nHave fun!")
-                startActivity(Intent(this,CoinzHome::class.java))
+                startActivity(Intent(this,CoinzHome::class.java)) //take them to main activity if login was successful
             }else{
-                toast("Log-in failed\nPlease check your details.")
+                toast("Log-in failed\nPlease check your details.") //otherwise, inform them of the failure and let them try again.
             }
         }
     }
