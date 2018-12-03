@@ -1,9 +1,9 @@
 package uk.ac.ed.inf.alexyz.coinz
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import com.google.firebase.FirebaseError
 import com.google.firebase.auth.FirebaseAuth
 
 import com.google.firebase.database.*
@@ -71,8 +71,9 @@ class UserProfile : AppCompatActivity() {
             startActivity(Intent(this, TradingScreen::class.java))
         }
     }
+    @SuppressLint("SetTextI18n")
     private fun setTexts(){
-        tvName.setText("Logged in as: ${mAuth.currentUser?.email ?:""}\n\nYour unique trading ID is:\n${(mAuth.currentUser?.uid ?:"").take(8)}")
-        tvDescription.setText("Current NET Worth: ${goldSum.toInt()}\n\nCoins cashed in today: $coinsToday")
+        tvName.text = "Logged in as: ${mAuth.currentUser?.email ?:""}\n\nYour unique trading ID is:\n${(mAuth.currentUser?.uid ?:"").take(8)}"
+        tvDescription.text = "Current NET Worth: ${goldSum.toInt()}\n\nCoins cashed in today: $coinsToday"
     }
 }

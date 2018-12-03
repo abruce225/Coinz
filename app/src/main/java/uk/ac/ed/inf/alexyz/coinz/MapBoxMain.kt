@@ -8,7 +8,6 @@ import android.location.Location
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
-import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.google.gson.Gson
@@ -33,7 +32,6 @@ import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.CameraMode
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.RenderMode
-import kotlinx.android.synthetic.main.activity_coinz_home.*
 
 import kotlinx.android.synthetic.main.activity_map_box_main.*
 
@@ -54,6 +52,7 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
     private lateinit var mAuth: FirebaseAuth
     private lateinit var userName: String
     private lateinit var mRootRef: DatabaseReference
+    private lateinit var databaseDate: String
 
     private var collectedCoins = arrayListOf<Coin>()
     private var remainingCoins = arrayListOf<Coin>()
@@ -77,6 +76,18 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
         if(sharedPrefs.getPP()){
             showInformationPopup()
         }
+        mRootRef.child("users/$userName/date").addListenerForSingleValueEvent(object: ValueEventListener{
+            override fun onCancelled(p0: DatabaseError) {
+                toast("can't access your data right now")
+            }
+            override fun onDataChange(p0: DataSnapshot) {
+                databaseDate = if(p0.exists()){
+                    p0.value.toString()
+                }else{
+                    ""
+                }
+            }
+        })
         mRootRef.child("users/$userName/collectedCoins").addValueEventListener(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
                 toast("Couldn't access your data, please check your net connection.")
@@ -118,26 +129,26 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
         mapView.getMapAsync{ mapboxMap ->
             map = mapboxMap
             enableLocation()
-            if((collectedCoins.size == 0 && remainingCoins.size == 0)){
+            if((sdf.format(Date())) != databaseDate){
                 createPins()
             }
             dropPins()
             map.uiSettings.setCompassMargins(100,150,100,100)
             map.uiSettings.setCompassFadeFacingNorth(false)
         }
-        tapBarMenu.setOnClickListener{view ->
+        tapBarMenu.setOnClickListener{
             tapBarMenu.toggle()
         }
-        openWallet.setOnClickListener{view ->
+        openWallet.setOnClickListener{
             startActivity(Intent(this, Wallet::class.java))
         }
-        openPopup.setOnClickListener{view ->
+        openPopup.setOnClickListener{
             showInformationPopup()
         }
-        openUserProfile.setOnClickListener{view->
+        openUserProfile.setOnClickListener{
             startActivity(Intent(this,UserProfile::class.java))
         }
-        displayRates.setOnClickListener{view->
+        displayRates.setOnClickListener{
             AlertDialog.Builder(this, android.R.style.ThemeOverlay_Material_Dialog).apply {
                 setTitle("Exc Rates For: ${sdf.format(Date())}")
                 setMessage("SHIL: ${sharedPrefs.getSHIL()}\nDOLR: ${sharedPrefs.getDOLR()}\nPENY: ${sharedPrefs.getPENY()}\nQUID: ${sharedPrefs.getQUID()}\n")
@@ -151,16 +162,16 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
         remainingCoinsAndMarkers.clear()
         for (a in remainingCoins){
             when {
-                a.currency.equals("PENY") ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_redmarker)
+                a.currency == "PENY" ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_redmarker)
                     remainingCoinsAndMarkers.add(CoinAndMarker(a,map.addMarker(MarkerOptions().position(a.latLng).icon(myIcon).title("${a.currency} value : ${a.value}")))) }
 
-                a.currency.equals("SHIL") ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_bluemarker)
+                a.currency == "SHIL" ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_bluemarker)
                     remainingCoinsAndMarkers.add(CoinAndMarker(a,map.addMarker(MarkerOptions().position(a.latLng).icon(myIcon).title("${a.currency} value : ${a.value}")))) }
 
-                a.currency.equals("QUID") ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_yellowmarker)
+                a.currency == "QUID" ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_yellowmarker)
                     remainingCoinsAndMarkers.add(CoinAndMarker(a,map.addMarker(MarkerOptions().position(a.latLng).icon(myIcon).title("${a.currency} value : ${a.value}")))) }
 
-                a.currency.equals("DOLR") ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_greenmarker)
+                a.currency == "DOLR" ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_greenmarker)
                     remainingCoinsAndMarkers.add(CoinAndMarker(a,map.addMarker(MarkerOptions().position(a.latLng).icon(myIcon).title("${a.currency} value : ${a.value}")))) }
             }
         }
@@ -170,6 +181,7 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
     }
 
     private fun createPins(){
+        mRootRef.child("users").child(userName).child("date").setValue(sdf.format(Date()))
         remainingCoins.clear()
         val json = JSONObject(todayGJS)
         val features: JSONArray = json.getJSONArray("features")

@@ -1,21 +1,15 @@
 package uk.ac.ed.inf.alexyz.coinz
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
-import android.support.constraint.ConstraintLayout
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.widget.*
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.android.synthetic.main.activity_wallet.*
-import kotlinx.android.synthetic.main.wallet_row.view.*
 import org.jetbrains.anko.toast
 import com.google.firebase.auth.FirebaseAuth
 
@@ -25,7 +19,6 @@ import com.mapbox.mapboxsdk.geometry.LatLng
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
-import android.widget.LinearLayout
 
 
 
@@ -172,21 +165,21 @@ class Wallet : AppCompatActivity() {
         buttonSubCons.setOnClickListener {
             openDepositPopup()
         }
-        tapBarMenuWallet.setOnClickListener{view ->
+        tapBarMenuWallet.setOnClickListener{
             tapBarMenuWallet.toggle()
         }
-        goHomeWallet.setOnClickListener{view ->
+        goHomeWallet.setOnClickListener{
             val intent = Intent(this, CoinzHome::class.java)
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             startActivity(intent)
         }
-        openPopupWallet.setOnClickListener{view ->
+        openPopupWallet.setOnClickListener{
             showInformationPopup()
         }
-        openUserProfileWallet.setOnClickListener{view->
+        openUserProfileWallet.setOnClickListener{
             startActivity(Intent(this,UserProfile::class.java))
         }
-        displayRatesWallet.setOnClickListener{view->
+        displayRatesWallet.setOnClickListener{
             AlertDialog.Builder(this, android.R.style.ThemeOverlay_Material_Dialog).apply {
                 setTitle("Exc Rates For: ${sdf.format(Date())}")
                 setMessage("SHIL: ${sharedPrefs.getSHIL()}\nDOLR: ${sharedPrefs.getDOLR()}\nPENY: ${sharedPrefs.getPENY()}\nQUID: ${sharedPrefs.getQUID()}\n")

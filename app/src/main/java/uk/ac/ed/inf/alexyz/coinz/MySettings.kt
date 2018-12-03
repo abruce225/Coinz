@@ -16,7 +16,7 @@ class MySettings : AppCompatActivity() {
                 popupBlocker.toggle()
             }
         }
-        popupBlocker.text = "Toggle Information Popups On/Off"
+        popupBlocker.text = getString(R.string.popupsettings)
         confirmChanges.setOnClickListener{
             mySharedPrefs.setPP(popupBlocker.isChecked)
             toast(mySharedPrefs.getPP().toString())

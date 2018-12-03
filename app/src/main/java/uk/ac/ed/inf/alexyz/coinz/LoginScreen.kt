@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.text.TextUtils
-import android.widget.Button
 import android.widget.EditText
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
@@ -39,10 +38,10 @@ class LoginScreen : AppCompatActivity() {
             password.setText(mySharedPrefs.getPassword())
             switchpassword.toggle()
         }
-        button_login.setOnClickListener{view->
+        button_login.setOnClickListener{
             loginUser()
         }
-        button_register.setOnClickListener{view ->
+        button_register.setOnClickListener{
             registerUser()
         }
     }

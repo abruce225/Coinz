@@ -17,9 +17,7 @@ class MySharedPrefs(context: Context) {
     val LONG = "lon"
     val POPUP = "wantsPopup"
 
-    val zeroFloat: Float = 0.toFloat()
-
-    val preference = context.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE)
+    val preference = context.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE)!!
 
     fun setPP(b:Boolean){
         val editor = preference.edit()

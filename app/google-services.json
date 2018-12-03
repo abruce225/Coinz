@@ -23,6 +23,14 @@
           }
         },
         {
+          "client_id": "1065453276869-ku2avk78b5brk08allp26ejvaei4vjt4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "uk.ac.ed.inf.alexyz.coinz",
+            "certificate_hash": "d063ad0cdfdbabd965057fddf3ed78a76091cc87"
+          }
+        },
+        {
           "client_id": "1065453276869-nqcchhi499q2cpclc95ikc50079b0l9a.apps.googleusercontent.com",
           "client_type": 3
         }

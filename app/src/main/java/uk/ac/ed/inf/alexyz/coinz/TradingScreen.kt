@@ -38,8 +38,6 @@ class TradingScreen : AppCompatActivity() {
     @SuppressLint("SimpleDateFormat")
     private val sdf = SimpleDateFormat("yyyy/MM/dd")
 
-    private val mContext = this
-
     private lateinit var todaydate: String
 
     private var quid: Float = 0.toFloat()
@@ -90,19 +88,19 @@ class TradingScreen : AppCompatActivity() {
                 }
             }
         })
-        tapBarMenuTrade.setOnClickListener{view ->
+        tapBarMenuTrade.setOnClickListener{
             tapBarMenuTrade.toggle()
         }
-        openWalletTrade.setOnClickListener{view ->
+        openWalletTrade.setOnClickListener{
             startActivity(Intent(this, Wallet::class.java))
         }
-        openPopupTrade.setOnClickListener{view ->
+        openPopupTrade.setOnClickListener{
             showInformationPopup()
         }
-        openUserProfileTrade.setOnClickListener{view->
+        openUserProfileTrade.setOnClickListener{
             finish()
         }
-        displayRatesTrade.setOnClickListener{view->
+        displayRatesTrade.setOnClickListener{
             AlertDialog.Builder(this, android.R.style.ThemeOverlay_Material_Dialog).apply {
                 setTitle("Exc Rates For: ${sdf.format(Date())}")
                 setMessage("SHIL: ${sharedPrefs.getSHIL()}\nDOLR: ${sharedPrefs.getDOLR()}\nPENY: ${sharedPrefs.getPENY()}\nQUID: ${sharedPrefs.getQUID()}\n")
@@ -140,9 +138,10 @@ class TradingScreen : AppCompatActivity() {
         builder.setMessage("Type unique trading name of the player you wish to send this coin to.\nCoin ID: ${collectedCoins[pos].id}")
         val input = EditText(this)
         val lp = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.MATCH_PARENT)
         input.layoutParams = lp
+        input.textAlignment = LinearLayout.TEXT_ALIGNMENT_CENTER
         val positiveButtonClick = { _: DialogInterface, _: Int ->
             tradeToPlayer(pos,input.text.toString())
         }
@@ -156,7 +155,7 @@ class TradingScreen : AppCompatActivity() {
         builder.show()
     }
     private fun tradeToPlayer(pos:Int, target:String){
-        var targetUID: String = ""
+        var targetUID: String
         mRootRef.child("trading/$target").addListenerForSingleValueEvent(object : ValueEventListener{
             override fun onCancelled(p0: DatabaseError) {
                 toast("Couldn't access your data, please check your net connection.")
@@ -185,7 +184,7 @@ class TradingScreen : AppCompatActivity() {
                     val json = p0.value.toString()
                     val coinType = object : TypeToken<List<Coin>>() {}.type
                     val abc:ArrayList<Coin> = myGSON.fromJson(json, coinType)
-                    var myBool:Boolean = false
+                    var myBool = false
                     for(a in abc){
                         if (a.id == xyz[0].id){
                             myBool = true
@@ -213,6 +212,7 @@ class TradingScreen : AppCompatActivity() {
         })
     }
 
+    @SuppressLint("SetTextI18n")
     private fun setTextViews(){
         tradingTextView.text = "Welcome to your tradable wallet, you have ${collectedCoins.size} coins, click a coin to begin the trading process"
     }
