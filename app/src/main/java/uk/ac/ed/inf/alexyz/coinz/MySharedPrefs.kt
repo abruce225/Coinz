@@ -2,7 +2,7 @@ package uk.ac.ed.inf.alexyz.coinz
 
 import android.content.Context
 
-class MySharedPrefs(context: Context) {
+class MySharedPrefs(context: Context) { //simple shared preferences manager.
 
     val PREFERENCE_NAME = "WALLET"
     val TODAY_DATE = "Today"
@@ -25,7 +25,6 @@ class MySharedPrefs(context: Context) {
         editor.apply()
     }
     fun getPP():Boolean{
-
         return preference.getBoolean(POPUP,true)
     }
 

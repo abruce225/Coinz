@@ -21,8 +21,6 @@ import kotlin.collections.ArrayList
 class TradingScreen : AppCompatActivity() {
     private lateinit var collectedCoins:ArrayList<Coin>
 
-    private lateinit var returnToWallet:ArrayList<Coin>
-
     private lateinit var alreadyCashed:ArrayList<Coin>
 
     private lateinit var mAuth: FirebaseAuth
@@ -38,6 +36,8 @@ class TradingScreen : AppCompatActivity() {
     @SuppressLint("SimpleDateFormat")
     private val sdf = SimpleDateFormat("yyyy/MM/dd")
 
+    val coinType = object : TypeToken<List<Coin>>() {}.type!!
+
     private lateinit var todaydate: String
 
     private var quid: Float = 0.toFloat()
@@ -47,11 +47,10 @@ class TradingScreen : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_trading_screen)
+        setContentView(R.layout.activity_trading_screen) //initiate all of the lateinit vars
         collectedCoins = arrayListOf()
         alreadyCashed = arrayListOf()
         todaydate = sdf.format(Date())
-        returnToWallet = arrayListOf()
         mAuth = FirebaseAuth.getInstance()
         myDataBase = FirebaseDatabase.getInstance()
         mRootRef = myDataBase.reference
@@ -65,7 +64,7 @@ class TradingScreen : AppCompatActivity() {
         shil = sharedPrefs.getSHIL()
         peny = sharedPrefs.getPENY()
         setTextViews()
-        mRootRef.child("users/$userName/collectedCoins").addListenerForSingleValueEvent(object : ValueEventListener {
+        mRootRef.child("users/$userName/collectedCoins").addValueEventListener(object : ValueEventListener { //pull all stored coins down and keep updating them for case when user receives coins whilst in activity
             override fun onCancelled(p0: DatabaseError) {
                 toast("Couldn't access your data, please check your net connection.")
             }
@@ -73,18 +72,26 @@ class TradingScreen : AppCompatActivity() {
                 if (p0.exists()) {
                     val myGSON = Gson()
                     val json = p0.value.toString()
-                    if (json != "") {
-                        val coinType = object : TypeToken<List<Coin>>() {}.type
+                    if (json != "") { //check if there are any coins stored for user in firebase
                         collectedCoins = myGSON.fromJson(json, coinType)
                         setTextViews()
-                        createListView()
-
-                    }else{
+                        if(::listView.isInitialized) { //if the listview is already up and the dataset changes, we simply update the for the listview dataset
+                            listView.getItemAtPosition(0)
+                        }else{
+                            createListView() //otherwise we must initialise and draw the listview with the new dataset
+                        }
+                    }else{ //no need to parse an empty JSON
                         setTextViews()
-                        createListView()
+                        if(::listView.isInitialized) {
+                            listView.getItemAtPosition(0)
+                        }else{
+                            createListView()
+                        }
                     }
                 }else{
+                    mRootRef.child("users/$userName/collectedCoins").setValue("")
                     setTextViews()
+                    toast("You have no coins! Go get some!")
                 }
             }
         })
@@ -109,31 +116,17 @@ class TradingScreen : AppCompatActivity() {
         }
     }
 
-    private fun showInformationPopup(){
-        val builder = AlertDialog.Builder(this)
-        val positiveButtonClick = { _: DialogInterface, _: Int ->}
-        builder.setTitle("Information for Trading")
-        builder.setMessage("Welcome to the trading screen! From here you can send coins to your friends.\n" +
-                "\nTo send coins, you'll need to get your friends 8 character code from their profile. Once you have this, simply click on a coin in this activity and enter the code." +
-                "The coin will be automatically added to your friends account, so next time they play Coinz it'll be there waiting for them!\n" +
-                "\nMake sure you send the right coin to your friend, as there's no way to get a coin back once it's sent.\n" +
-                "\nBe aware that you can't send a friend a coin that they already have! Happy trading!")
-        builder.setPositiveButton("Got it!", DialogInterface.OnClickListener(positiveButtonClick))
-        builder.create()
-        builder.show()
-    }
-
     @SuppressLint("ResourceAsColor")
     private fun createListView(){
-        listView = findViewById(R.id.tradingListView)
+        listView = findViewById(R.id.tradingListView) //draw the list view, all the set up is handled in coin adapter, which is shared with the list view drawn in wallet
         listView.adapter = CoinAdapter(this, collectedCoins)
         listView.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
             createTradePopup(position)
             setTextViews()
         }
     }
-    private fun createTradePopup(pos:Int){
-        val builder = AlertDialog.Builder(this)
+    private fun createTradePopup(pos:Int){ // Trading is handled in a popup which is created when a user clicks a coin
+        val builder = AlertDialog.Builder(this) // this whole function just handles the creation of this popup
         builder.setTitle("Trade Coin to Player")
         builder.setMessage("Type unique trading name of the player you wish to send this coin to.\nCoin ID: ${collectedCoins[pos].id}")
         val input = EditText(this)
@@ -143,7 +136,7 @@ class TradingScreen : AppCompatActivity() {
         input.layoutParams = lp
         input.textAlignment = LinearLayout.TEXT_ALIGNMENT_CENTER
         val positiveButtonClick = { _: DialogInterface, _: Int ->
-            tradeToPlayer(pos,input.text.toString())
+            tradeToPlayer(pos,input.text.toString()) //if we wish to trade to a tag, we pass it to this function, along with the position of the coin that was selected
         }
         val negativeButtonClick = { _: DialogInterface, _: Int ->
             Toast.makeText(applicationContext, "Returned to your Wallet.", Toast.LENGTH_SHORT).show()
@@ -156,12 +149,12 @@ class TradingScreen : AppCompatActivity() {
     }
     private fun tradeToPlayer(pos:Int, target:String){
         var targetUID: String
-        mRootRef.child("trading/$target").addListenerForSingleValueEvent(object : ValueEventListener{
+        mRootRef.child("trading/$target").addListenerForSingleValueEvent(object : ValueEventListener{ //pull the full ID associated with the tag from the database
             override fun onCancelled(p0: DatabaseError) {
                 toast("Couldn't access your data, please check your net connection.")
             }
             override fun onDataChange(p0: DataSnapshot) {
-                if(p0.exists()){
+                if(p0.exists()){ //check if the player is real and either continue with their full tag or abort
                     targetUID = p0.value.toString()
                     getTargetCollectedAndAdd(pos,targetUID)
                     return
@@ -172,15 +165,15 @@ class TradingScreen : AppCompatActivity() {
             }
         })
     }
-    private fun getTargetCollectedAndAdd(pos:Int,tUID:String){
+    private fun getTargetCollectedAndAdd(pos:Int,tUID:String){ //this function pulls the collected coins of the player with UID = tUID. It checks if the player already has the coin and if they don't it will append the traded coin to their collect coins, otherwise it'll abort
         val myGSON = Gson()
-        val xyz: ArrayList<Coin> = arrayListOf(collectedCoins[pos])
+        val xyz: ArrayList<Coin> = arrayListOf(collectedCoins[pos]) //create arraylist of single coin that we want to trade
         mRootRef.child("users/$tUID/collectedCoins").addListenerForSingleValueEvent(object : ValueEventListener{
             override fun onCancelled(p0: DatabaseError) {
                 toast("Couldn't access your data, please check your net connection.")
             }
             override fun onDataChange(p0: DataSnapshot) {
-                if(p0.exists() && p0.value.toString() != ""){
+                if(p0.exists() && p0.value.toString() != ""){ //if the target user
                     val json = p0.value.toString()
                     val coinType = object : TypeToken<List<Coin>>() {}.type
                     val abc:ArrayList<Coin> = myGSON.fromJson(json, coinType)
@@ -200,12 +193,14 @@ class TradingScreen : AppCompatActivity() {
                     listView.getItemAtPosition(0)
                     mRootRef.child("users/$tUID/collectedCoins").setValue(myGSON.toJson(abc))
                     mRootRef.child("users/$userName/collectedCoins").setValue(myGSON.toJson(collectedCoins))
+                    setTextViews()
                     return
                 }else{
                     collectedCoins.removeAt(pos)
                     listView.getItemAtPosition(0)
                     mRootRef.child("users/$tUID/collectedCoins").setValue(myGSON.toJson(xyz))
                     mRootRef.child("users/$userName/collectedCoins").setValue(myGSON.toJson(collectedCoins))
+                    setTextViews()
                     return
                 }
             }
@@ -215,5 +210,19 @@ class TradingScreen : AppCompatActivity() {
     @SuppressLint("SetTextI18n")
     private fun setTextViews(){
         tradingTextView.text = "Welcome to your tradable wallet, you have ${collectedCoins.size} coins, click a coin to begin the trading process"
+    }
+
+    private fun showInformationPopup(){
+        val builder = AlertDialog.Builder(this)
+        val positiveButtonClick = { _: DialogInterface, _: Int ->}
+        builder.setTitle("Information for Trading")
+        builder.setMessage("Welcome to the trading screen! From here you can send coins to your friends.\n" +
+                "\nTo send coins, you'll need to get your friends 8 character code from their profile. Once you have this, simply click on a coin in this activity and enter the code." +
+                "The coin will be automatically added to your friends account, so next time they play Coinz it'll be there waiting for them!\n" +
+                "\nMake sure you send the right coin to your friend, as there's no way to get a coin back once it's sent.\n" +
+                "\nBe aware that you can't send a friend a coin that they already have! Happy trading!")
+        builder.setPositiveButton("Got it!", DialogInterface.OnClickListener(positiveButtonClick))
+        builder.create()
+        builder.show()
     }
 }

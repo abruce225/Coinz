@@ -159,14 +159,14 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
     }
 
     private fun dropPins(){
-        remainingCoinsAndMarkers.clear()
-        for (a in remainingCoins){
+        remainingCoinsAndMarkers.clear() //this is required for the case when the user launches wallet from mapbox activity, to avoid glitch with 2x the coins being rendered
+        for (a in remainingCoins){ //iterate over the coins that are stored in remCoins, either from the createpins function below, or pulled from firebase
             when {
-                a.currency == "PENY" ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_redmarker)
-                    remainingCoinsAndMarkers.add(CoinAndMarker(a,map.addMarker(MarkerOptions().position(a.latLng).icon(myIcon).title("${a.currency} value : ${a.value}")))) }
+                a.currency == "PENY" ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_redmarker) //create an icon that mapbox can render based on the currency of the coin
+                    remainingCoinsAndMarkers.add(CoinAndMarker(a,map.addMarker(MarkerOptions().position(a.latLng).icon(myIcon).title("${a.currency} value : ${a.value}")))) } //then render the coin on the map and create a coinAndMarker object containing it
 
                 a.currency == "SHIL" ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_bluemarker)
-                    remainingCoinsAndMarkers.add(CoinAndMarker(a,map.addMarker(MarkerOptions().position(a.latLng).icon(myIcon).title("${a.currency} value : ${a.value}")))) }
+                    remainingCoinsAndMarkers.add(CoinAndMarker(a,map.addMarker(MarkerOptions().position(a.latLng).icon(myIcon).title("${a.currency} value : ${a.value}")))) } //markers may be tapped by user to display their value
 
                 a.currency == "QUID" ->  {val myIcon: Icon = IconFactory.getInstance(this).fromResource(ic_yellowmarker)
                     remainingCoinsAndMarkers.add(CoinAndMarker(a,map.addMarker(MarkerOptions().position(a.latLng).icon(myIcon).title("${a.currency} value : ${a.value}")))) }
@@ -175,16 +175,15 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
                     remainingCoinsAndMarkers.add(CoinAndMarker(a,map.addMarker(MarkerOptions().position(a.latLng).icon(myIcon).title("${a.currency} value : ${a.value}")))) }
             }
         }
-        val myIcon = IconFactory.getInstance(this).fromResource(R.mipmap.ic_bank_icon)
+        val myIcon = IconFactory.getInstance(this).fromResource(R.mipmap.ic_bank_icon) //drop the icon representing where the bank should be
         map.addMarker(MarkerOptions().position(LatLng(55.942963,-3.189014)).icon(myIcon).title("$$$ Central Bank $$$"))
-        remainingCoins.clear()
-        setCoins()
+        remainingCoins.clear() //this is fundamentally unnecessary however it keeps memory usage down and stops any issues with array synchronisation throughout the activity
     }
 
     private fun createPins(){
-        mRootRef.child("users").child(userName).child("date").setValue(sdf.format(Date()))
+        mRootRef.child("users").child(userName).child("date").setValue(sdf.format(Date())) //update firebase so that we know the user has had all 50 coins added to their account for the day
         remainingCoins.clear()
-        val json = JSONObject(todayGJS)
+        val json = JSONObject(todayGJS) //parse the geoJSON using gson. Pull all necessary values out of the geojson, and then it won't be used again. Keep geoJSOn in sharedprefs incase another user wishes to log in.
         val features: JSONArray = json.getJSONArray("features")
         val featuresCount = features.length() - 1
         for (i in 0..featuresCount){
@@ -203,42 +202,41 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
         }
     } //this function creates all 50 coins from the provided GEOJSON, and adds them to remainingCoins
 
-    private fun checkIfNear(location:LatLng){
-        var counter = remainingCoinsAndMarkers.size - 1
+    private fun checkIfNear(location:LatLng){ //this function is called in the onLocationChanged method and allows us to check every coin remaining on the maps proximity to the enw location. This could be heavily optimised however I don't think this is necessary
+        var counter = remainingCoinsAndMarkers.size - 1 //use negative iteration as we are removing elements, and don't want null pointer exceptions etc
         while (counter >= 0){
-            if (remainingCoinsAndMarkers[counter].coin.latLng.distanceTo(location) < 25.0){
-                collectCoin(remainingCoinsAndMarkers[counter])
-            }
+            if (remainingCoinsAndMarkers[counter].coin.latLng.distanceTo(location) < 25.0){//get the latLng of the coin on the current iteration and then compare it to the latLng passed into the function
+                collectCoin(remainingCoinsAndMarkers[counter]) //use collectCoin fun to remove coin from the array;list opf coins and markers, and also remove the marker form the map. Handling of updating firebase also completed within this function
+            }                                                  //arguably this creates too many updates, but on any given location change the user will probably collect at most 2 coins, and usually 0, so it's a minor inconvenience
             counter--
         }
-        setCoins()
     }
 
     private fun collectCoin(coinAndMarker: CoinAndMarker){
-        toast("Removing marker with ID: ${coinAndMarker.coin.id}")
-        removeMarker(coinAndMarker)
+        toast("Removing marker with ID: ${coinAndMarker.coin.id}") //let the user know that they have hit a coin and that it'll be removed
+        removeMarker(coinAndMarker) //see below
     }
 
     private fun removeMarker(coinAndMarker: CoinAndMarker){
-        map.removeMarker(coinAndMarker.marker)
-        collectedCoins.add(coinAndMarker.coin)
-        remainingCoinsAndMarkers.remove(coinAndMarker)
-        setCoins()
+        map.removeMarker(coinAndMarker.marker) //remove the marker held in the coinandmarker object from the map
+        collectedCoins.add(coinAndMarker.coin) //add the collected coin to collectedCoins(the users wallet)
+        remainingCoinsAndMarkers.remove(coinAndMarker) //remove the object from the arrayList
+        setCoins() //update firebase
     }
 
 
     private fun setCoins(){
         val sharedPrefs = MySharedPrefs(this)
-        if (sdf.format(Date())==sharedPrefs.getToday()){
+        if (sdf.format(Date())==sharedPrefs.getToday()){ //makesure the user hasn't tried to collect coin from yesterday, by playing at 2359 and then collecting at 0001
             setRemaining()
             setCollected()
         }else{
             toast("You don't have the current map.\nRestarting app now.")
-            finishAffinity()
+            finishAffinity() // in this situation safest way to handle is to end all activities and let the user reload the map. Stops any issues with duplicate coins and having 100 coins on the map
         }
     }
 
-    private fun setCollected() {
+    private fun setCollected() { //both these functions will update firebase
         val myGSON = Gson()
         val json = myGSON.toJson(collectedCoins)
         mRootRef.child("users").child(userName).child("collectedCoins").setValue(json)
@@ -246,14 +244,14 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
 
     private fun setRemaining(){
         remainingCoins.clear()
-        for (a in remainingCoinsAndMarkers){remainingCoins.add(a.coin)}
+        for (a in remainingCoinsAndMarkers){remainingCoins.add(a.coin)} //we first must get the coins from coinsandmarkers
         val myGSON = Gson()
         val json = myGSON.toJson(remainingCoins)
         mRootRef.child("users").child(userName).child("remainingCoins").setValue(json)
         remainingCoins.clear()
     }
 
-    private fun enableLocation(){
+    private fun enableLocation(){ //below are the functions required by mapbox. The spec for them is available in the mapbox api documentation
         if (PermissionsManager.areLocationPermissionsGranted(this)){
             initialiseLocationEngine()
             initialiseLocationLayer()
@@ -318,7 +316,7 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
     }
 
     override fun onExplanationNeeded(permissionsToExplain: MutableList<String>?) {
-        toast("Plz")
+        toast("This permission is required if you wish to collect any coins!")
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -391,4 +389,4 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
     }
 }
 
-private class CoinAndMarker(val coin:Coin, val marker:Marker)
+private class CoinAndMarker(val coin:Coin, val marker:Marker) //class to hold marker and coin it represents together. Stops and issue with synchronisation

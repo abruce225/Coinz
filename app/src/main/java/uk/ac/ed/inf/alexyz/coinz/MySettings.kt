@@ -11,13 +11,13 @@ class MySettings : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_my_settings)
         val mySharedPrefs = MySharedPrefs(this)
-        if (mySharedPrefs.getPP()){
+        if (mySharedPrefs.getPP()){ //display the setting as the user has stored it in sharedprefs
             if(!popupBlocker.isChecked){
                 popupBlocker.toggle()
             }
         }
         popupBlocker.text = getString(R.string.popupsettings)
-        confirmChanges.setOnClickListener{
+        confirmChanges.setOnClickListener{ //if the user clicks the button, update the sharedPrefs to reflect the settings
             mySharedPrefs.setPP(popupBlocker.isChecked)
             toast(mySharedPrefs.getPP().toString())
         }
