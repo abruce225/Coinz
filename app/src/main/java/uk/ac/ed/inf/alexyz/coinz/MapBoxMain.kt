@@ -60,6 +60,7 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
 
     @SuppressLint("SimpleDateFormat")
     private val sdf = SimpleDateFormat("yyyy/MM/dd")
+    private var distanceTo = 25
 
 
     private var locationEngine: LocationEngine? = null
@@ -76,6 +77,20 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
         if(sharedPrefs.getPP()){ //display popup if user has requested them in settings
             showInformationPopup()
         }
+        mRootRef.child("users/$userName/hoover").addValueEventListener(object : ValueEventListener{
+            override fun onCancelled(p0: DatabaseError) {
+                toast("can't access your data right now")
+            }
+            override fun onDataChange(p0: DataSnapshot) {
+                if(p0.exists()){
+                    distanceTo = if(p0.value.toString() == sdf.format(Date())){
+                        75
+                    }else{
+                        25
+                    }
+                }
+            }
+        })
         mRootRef.child("users/$userName/date").addListenerForSingleValueEvent(object: ValueEventListener{ //one time pull of most recent date that the user has played the game
             override fun onCancelled(p0: DatabaseError) {
                 toast("can't access your data right now")
@@ -178,6 +193,7 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
         val myIcon = IconFactory.getInstance(this).fromResource(R.mipmap.ic_bank_icon) //drop the icon representing where the bank should be
         map.addMarker(MarkerOptions().position(LatLng(55.942963,-3.189014)).icon(myIcon).title("$$$ Central Bank $$$"))
         remainingCoins.clear() //this is fundamentally unnecessary however it keeps memory usage down and stops any issues with array synchronisation throughout the activity
+        setCoins()
     }
 
     private fun createPins(){
@@ -205,7 +221,7 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
     private fun checkIfNear(location:LatLng){ //this function is called in the onLocationChanged method and allows us to check every coin remaining on the maps proximity to the enw location. This could be heavily optimised however I don't think this is necessary
         var counter = remainingCoinsAndMarkers.size - 1 //use negative iteration as we are removing elements, and don't want null pointer exceptions etc
         while (counter >= 0){
-            if (remainingCoinsAndMarkers[counter].coin.latLng.distanceTo(location) < 25.0){//get the latLng of the coin on the current iteration and then compare it to the latLng passed into the function
+            if (remainingCoinsAndMarkers[counter].coin.latLng.distanceTo(location) < distanceTo){//get the latLng of the coin on the current iteration and then compare it to the latLng passed into the function
                 collectCoin(remainingCoinsAndMarkers[counter]) //use collectCoin fun to remove coin from the array;list opf coins and markers, and also remove the marker form the map. Handling of updating firebase also completed within this function
             }                                                  //arguably this creates too many updates, but on any given location change the user will probably collect at most 2 coins, and usually 0, so it's a minor inconvenience
             counter--

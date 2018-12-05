@@ -16,6 +16,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 
 import com.mapbox.mapboxsdk.geometry.LatLng
+import kotlinx.android.synthetic.main.activity_my_store.*
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
@@ -61,6 +62,8 @@ class Wallet : AppCompatActivity() {
     private var shil: Float = 0.toFloat()
     private var peny: Float = 0.toFloat()
 
+    private var bankless =false
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,6 +81,16 @@ class Wallet : AppCompatActivity() {
         if(sharedPrefs.getPP()){
             showInformationPopup()
         }
+        mRootRef.child("users/$userName/bankless").addValueEventListener(object: ValueEventListener{
+            override fun onCancelled(p0: DatabaseError) {
+                toast("can't access your data right now")
+            }
+            override fun onDataChange(p0: DataSnapshot) {
+                if(p0.exists()){
+                    bankless = p0.value.toString() == todaydate
+                }
+            }
+        })
         quid = sharedPrefs.getQUID()
         dolr = sharedPrefs.getDOLR()
         shil = sharedPrefs.getSHIL()
@@ -152,7 +165,7 @@ class Wallet : AppCompatActivity() {
                 val mll = LatLng(0.0,0.0)
                 mll.latitude = sharedPrefs.getLAT().toDouble()
                 mll.longitude = sharedPrefs.getLON().toDouble()
-                if(LatLng(55.942963,-3.189014).distanceTo(mll) < 50) {
+                if(LatLng(55.942963,-3.189014).distanceTo(mll) < 50 || bankless) {
                     cashInAllDeposit()
                     listView.getItemAtPosition(0)
                 }else{

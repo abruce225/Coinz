@@ -106,6 +106,9 @@ class CoinzHome : AppCompatActivity() {
                 show()
             }
         }
+        storeButton.setOnClickListener{
+            startActivity(Intent(this,MyStore::class.java))
+        }
     }
 
     private fun getGeoJSON(){

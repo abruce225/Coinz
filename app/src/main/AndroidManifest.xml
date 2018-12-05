@@ -37,7 +37,8 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".TradingScreen" />
         <activity android:name=".Settings" />
-        <activity android:name=".MySettings"></activity>
+        <activity android:name=".MySettings" />
+        <activity android:name=".MyStore"></activity>
     </application>
 
 </manifest>

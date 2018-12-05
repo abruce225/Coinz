@@ -108,5 +108,6 @@
         "when a user tries to pick up one of cards.\n\n"
     </string>
     <string name="popupsettings">Toggle Information Popups On/Off</string>
+    <string name="welcome_to_the_store_click_on_an_item_to_purchase_it_power_ups_last_until_the_end_of_the_current_day">Welcome to the store, click on an item to purchase it! Power-ups last until the end of the current day.</string>
 
 </resources>
