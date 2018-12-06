@@ -23,13 +23,13 @@
 
     <TextView
         android:id="@+id/hoover"
-        android:layout_width="272dp"
-        android:layout_height="44dp"
-        android:layout_marginStart="8dp"
+        android:layout_width="250dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="24dp"
+        android:text="Pick up coins in a 75 metre radius around you!"
         android:textSize="16dp"
         android:textStyle="italic"
-        android:text="Pick up coins in a 75 metre radius around you!"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/headline" />
 
@@ -39,9 +39,9 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="24dp"
-        android:layout_marginEnd="8dp"
-        android:text="Button"
+        android:layout_marginEnd="16dp"
         android:backgroundTint="@color/mainTheme"
+        android:text="Activate"
         android:textColor="@color/myGold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/hoover"
@@ -49,13 +49,13 @@
 
     <TextView
         android:id="@+id/nobank"
-        android:layout_width="272dp"
-        android:layout_height="44dp"
-        android:layout_marginStart="8dp"
-        android:textSize="16dp"
-        android:textStyle="italic"
+        android:layout_width="250dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="24dp"
         android:text="Screw the bank! You can fire your money in from anywhere, it's 2018!"
+        android:textSize="16dp"
+        android:textStyle="italic"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/hoover" />
 
@@ -65,10 +65,10 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="24dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginEnd="16dp"
         android:backgroundTint="@color/mainTheme"
+        android:text="Activate"
         android:textColor="@color/myGold"
-        android:text="Button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/nobank"
         app:layout_constraintTop_toBottomOf="@+id/hooveractivate" />
@@ -143,9 +143,9 @@
         android:id="@+id/currentWorth"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="24dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginEnd="16dp"
         android:text="You currently have 0 gold."
         android:textAlignment="center"
         android:textSize="18dp"

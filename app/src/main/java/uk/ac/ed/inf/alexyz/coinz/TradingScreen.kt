@@ -168,7 +168,7 @@ class TradingScreen : AppCompatActivity() {
     private fun getTargetCollectedAndAdd(pos:Int,tUID:String){ //this function pulls the collected coins of the player with UID = tUID. It checks if the player already has the coin and if they don't it will append the traded coin to their collect coins, otherwise it'll abort
         val myGSON = Gson()
         val xyz: ArrayList<Coin> = arrayListOf(collectedCoins[pos]) //create arraylist of single coin that we want to trade
-        mRootRef.child("users/$tUID/collectedCoins").addListenerForSingleValueEvent(object : ValueEventListener{
+        mRootRef.child("users/$tUID/collectedCoins").addListenerForSingleValueEvent(object : ValueEventListener{ //pull the collected coins of the target user down
             override fun onCancelled(p0: DatabaseError) {
                 toast("Couldn't access your data, please check your net connection.")
             }
@@ -178,7 +178,7 @@ class TradingScreen : AppCompatActivity() {
                     val coinType = object : TypeToken<List<Coin>>() {}.type
                     val abc:ArrayList<Coin> = myGSON.fromJson(json, coinType)
                     var myBool = false
-                    for(a in abc){
+                    for(a in abc){ //make sure they don't already have this coin.
                         if (a.id == xyz[0].id){
                             myBool = true
                             break
@@ -189,15 +189,15 @@ class TradingScreen : AppCompatActivity() {
                         return
                     }
                     abc.addAll(xyz)
-                    collectedCoins.removeAt(pos)
-                    listView.getItemAtPosition(0)
-                    mRootRef.child("users/$tUID/collectedCoins").setValue(myGSON.toJson(abc))
+                    collectedCoins.removeAt(pos) //remove the coin from this suers account
+                    listView.getItemAtPosition(0) //update listView
+                    mRootRef.child("users/$tUID/collectedCoins").setValue(myGSON.toJson(abc)) //replace both lists with update ones
                     mRootRef.child("users/$userName/collectedCoins").setValue(myGSON.toJson(collectedCoins))
                     setTextViews()
                     return
-                }else{
+                }else{ //if the target user doesn't have any coins yet just add the single coin into the collectedCoins field and remove it from current users collected coins
                     collectedCoins.removeAt(pos)
-                    listView.getItemAtPosition(0)
+                    listView.getItemAtPosition(0) //update listView
                     mRootRef.child("users/$tUID/collectedCoins").setValue(myGSON.toJson(xyz))
                     mRootRef.child("users/$userName/collectedCoins").setValue(myGSON.toJson(collectedCoins))
                     setTextViews()

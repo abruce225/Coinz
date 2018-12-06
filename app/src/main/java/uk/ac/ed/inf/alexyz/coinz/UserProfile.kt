@@ -10,8 +10,8 @@ import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.activity_user_profile.*
 import org.jetbrains.anko.toast
 
-class UserProfile : AppCompatActivity() {
-
+class UserProfile : AppCompatActivity() { //simple activity which allows the user to view info on their account.
+                                          //pulls info from the database and displays it
     private lateinit var mAuth: FirebaseAuth
     private lateinit var mRootRef: DatabaseReference
     private lateinit var userName: String

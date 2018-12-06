@@ -62,6 +62,14 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
     private val sdf = SimpleDateFormat("yyyy/MM/dd")
     private var distanceTo = 25
 
+    //vars to control setup process, so all serverside activities are completed prior to rendering pins on the map
+    private var remCoinsReady = false
+    private var colCoinsReady = false
+    private var dateReady = false
+    private var mapReady = false
+
+    private var setupComplete = false
+
 
     private var locationEngine: LocationEngine? = null
     private var locationLayerPlugin: LocationLayerPlugin? = null
@@ -91,7 +99,7 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
                 }
             }
         })
-        mRootRef.child("users/$userName/date").addListenerForSingleValueEvent(object: ValueEventListener{ //one time pull of most recent date that the user has played the game
+        mRootRef.child("users/$userName/date").addValueEventListener(object: ValueEventListener{ //one time pull of most recent date that the user has played the game
             override fun onCancelled(p0: DatabaseError) {
                 toast("can't access your data right now")
             }
@@ -101,6 +109,8 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
                 }else{
                     ""
                 }
+                dateReady = true
+                postSetUp()
             }
         })
         mRootRef.child("users/$userName/collectedCoins").addValueEventListener(object : ValueEventListener { //this value is constantly updating, with potential for someone to trade a coin in as the player is playing
@@ -118,7 +128,11 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
                         collectedCoins.clear()
                     }
 
+                }else{
+                    collectedCoins = arrayListOf()
                 }
+                colCoinsReady = true
+                postSetUp()
             }
         })
         mRootRef.child("users/$userName/remainingCoins").addValueEventListener(object : ValueEventListener {//same as collected coins, this allows us to keep tabs on which coins are remaining
@@ -135,21 +149,23 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
                     } else {
                         remainingCoins.clear()
                     }
+                }else{
+                    remainingCoins = arrayListOf()
                 }
+                remCoinsReady = true
+                postSetUp()
             }
         })
         Mapbox.getInstance(applicationContext, getString(R.string.access_token)) //section that sets up mapbox and mapview
         mapView = findViewById(R.id.mapView)
         mapView.onCreate(savedInstanceState)
-        mapView.getMapAsync{ mapboxMap -> //once map is set up, we need to create "pins" that allow us to draw on the map
+        mapView.getMapAsync{ mapboxMap ->
             map = mapboxMap
             enableLocation()
-            if((sdf.format(Date())) != databaseDate){//if this is the users first session today, we must create a full set of pins from the geojson
-                createPins()
-            }
-            dropPins()//otherwise we can simply use the coins stored in remaining coins on the database to drop the markers on the map
             map.uiSettings.setCompassMargins(100,150,100,100) //add compass for easy orientation
             map.uiSettings.setCompassFadeFacingNorth(false)
+            mapReady = true
+            postSetUp()
         }
         tapBarMenu.setOnClickListener{
             tapBarMenu.toggle()
@@ -170,7 +186,16 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
                 show()
             }
         }
+    }
 
+    private fun postSetUp(){ //this fun renders the markers on the map when all async tasks have completed. Stops null errors
+        if(colCoinsReady && remCoinsReady && dateReady && mapReady && !setupComplete) {//we can only run this once ever single async task has completed
+            setupComplete = true //make sure that we don't run it twice in one session
+            if ((sdf.format(Date())) != databaseDate) {//if this is the users first session today, we must create a full set of pins from the geojson
+                createPins()
+            }
+            dropPins()//otherwise we can simply use the coins stored in remaining coins on the database to drop the markers on the map
+        }
     }
 
     private fun dropPins(){
@@ -192,13 +217,12 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
         }
         val myIcon = IconFactory.getInstance(this).fromResource(R.mipmap.ic_bank_icon) //drop the icon representing where the bank should be
         map.addMarker(MarkerOptions().position(LatLng(55.942963,-3.189014)).icon(myIcon).title("$$$ Central Bank $$$"))
-        remainingCoins.clear() //this is fundamentally unnecessary however it keeps memory usage down and stops any issues with array synchronisation throughout the activity
-        setCoins()
+        setCoins() //once we have set all of the remaining coins and collected coins up, we sync this to the server.This then gets redownloaded above, however this isn't an issue
     }
 
     private fun createPins(){
-        mRootRef.child("users").child(userName).child("date").setValue(sdf.format(Date())) //update firebase so that we know the user has had all 50 coins added to their account for the day
-        remainingCoins.clear()
+        mRootRef.child("users/${userName}/date").setValue(sdf.format(Date())) //update firebase so that we know the user has had all 50 coins added to their account for the day
+        clearOld()
         val json = JSONObject(todayGJS) //parse the geoJSON using gson. Pull all necessary values out of the geojson, and then it won't be used again. Keep geoJSOn in sharedprefs incase another user wishes to log in.
         val features: JSONArray = json.getJSONArray("features")
         val featuresCount = features.length() - 1
@@ -217,6 +241,17 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
             remainingCoins.add(tempCoin)
         }
     } //this function creates all 50 coins from the provided GEOJSON, and adds them to remainingCoins
+
+    private fun clearOld(){ //we don't want to delete coins from the current day from the users wallet, so we make sure we don't
+        var counter = collectedCoins.size -1
+        while(counter >= 0){
+            if (collectedCoins[counter].date != sdf.format(Date())){
+                collectedCoins.removeAt(counter)
+            }
+            counter--
+        }
+        remainingCoins.clear() //however all remaining coins must be cleared. let none remain.
+    }
 
     private fun checkIfNear(location:LatLng){ //this function is called in the onLocationChanged method and allows us to check every coin remaining on the maps proximity to the enw location. This could be heavily optimised however I don't think this is necessary
         var counter = remainingCoinsAndMarkers.size - 1 //use negative iteration as we are removing elements, and don't want null pointer exceptions etc
@@ -265,6 +300,11 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
         val json = myGSON.toJson(remainingCoins)
         mRootRef.child("users").child(userName).child("remainingCoins").setValue(json)
         remainingCoins.clear()
+    }
+    private fun wipeDatabase(){
+        mRootRef.child("users/$userName/collectedCoins").setValue("") //used for testing, removes all coins for the day. Also resets the date record to allow the coins to be redrawn.
+        mRootRef.child("users/$userName/remainingCoins").setValue("")
+        mRootRef.child("users/$userName/date").setValue("")
     }
 
     private fun enableLocation(){ //below are the functions required by mapbox. The spec for them is available in the mapbox api documentation
@@ -354,7 +394,6 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
             }
             locationEngine!!.addLocationEngineListener(this)
         }
-
     }
 
     override fun onPause() {

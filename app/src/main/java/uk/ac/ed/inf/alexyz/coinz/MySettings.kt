@@ -19,7 +19,6 @@ class MySettings : AppCompatActivity() {
         popupBlocker.text = getString(R.string.popupsettings)
         confirmChanges.setOnClickListener{ //if the user clicks the button, update the sharedPrefs to reflect the settings
             mySharedPrefs.setPP(popupBlocker.isChecked)
-            toast(mySharedPrefs.getPP().toString())
         }
     }
 }

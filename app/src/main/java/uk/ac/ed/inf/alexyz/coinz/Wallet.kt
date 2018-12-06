@@ -23,7 +23,7 @@ import kotlin.collections.ArrayList
 
 
 
-@SuppressLint("MissingPermission", "SetTextI18n")
+@SuppressLint("MissingPermission", "SetTextI18n") //very similar to Trading Screen, except implements no duplication rule and allows cashing in of multiple coins at once.
 class Wallet : AppCompatActivity() {
 
     private lateinit var collectedCoins:ArrayList<Coin>
@@ -64,11 +64,12 @@ class Wallet : AppCompatActivity() {
 
     private var bankless =false
 
+    val coinType = object : TypeToken<List<Coin>>() {}.type
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_wallet)
-        depositBox = arrayListOf()
+        depositBox = arrayListOf() //initialise arrays to avoid null errors
         collectedCoins = arrayListOf()
         alreadyCashed = arrayListOf()
         todaydate = sdf.format(Date())
@@ -81,7 +82,7 @@ class Wallet : AppCompatActivity() {
         if(sharedPrefs.getPP()){
             showInformationPopup()
         }
-        mRootRef.child("users/$userName/bankless").addValueEventListener(object: ValueEventListener{
+        mRootRef.child("users/$userName/bankless").addValueEventListener(object: ValueEventListener{ //check if user has an active bankless powerup from the shop
             override fun onCancelled(p0: DatabaseError) {
                 toast("can't access your data right now")
             }
@@ -129,17 +130,25 @@ class Wallet : AppCompatActivity() {
                 if (p0.exists()) {
                     val myGSON = Gson()
                     val json = p0.value.toString()
-                    if (json != "") {
-                        val coinType = object : TypeToken<List<Coin>>() {}.type
+                    if (json != "") { //check if there are any coins stored for user in firebase
                         collectedCoins = myGSON.fromJson(json, coinType)
                         setTextViews()
-                        createListView()
-
-                    }else{
+                        if(::listView.isInitialized) { //if the listview is already up and the dataset changes, we simply update the for the listview dataset
+                            listView.getItemAtPosition(0)
+                        }else{
+                            createListView() //otherwise we must initialise and draw the listview with the new dataset
+                        }
+                    }else{ //no need to parse an empty JSON
+                        collectedCoins = arrayListOf()
                         setTextViews()
-                        createListView()
+                        if(::listView.isInitialized) {
+                            listView.getItemAtPosition(0)
+                        }else{
+                            createListView()
+                        }
                     }
                 }else{
+                    createListView()
                     setTextViews()
                 }
             }
@@ -164,8 +173,8 @@ class Wallet : AppCompatActivity() {
             if (depositBox.size > 0){
                 val mll = LatLng(0.0,0.0)
                 mll.latitude = sharedPrefs.getLAT().toDouble()
-                mll.longitude = sharedPrefs.getLON().toDouble()
-                if(LatLng(55.942963,-3.189014).distanceTo(mll) < 50 || bankless) {
+                mll.longitude = sharedPrefs.getLON().toDouble() //pull the most recent location from shared prefs. This is updated every time onlocationchanged is called in mapBoxMain
+                if(LatLng(55.942963,-3.189014).distanceTo(mll) < 50 || bankless) {//if user is at the bank or has a powerup cash in the coins
                     cashInAllDeposit()
                     listView.getItemAtPosition(0)
                 }else{
@@ -176,7 +185,11 @@ class Wallet : AppCompatActivity() {
             }
         }
         buttonSubCons.setOnClickListener {
-            openDepositPopup()
+            if(depositBox.size > 0){
+                openDepositPopup()
+            }else{
+                toast("You need to add some coins first!")
+            }
         }
         tapBarMenuWallet.setOnClickListener{
             tapBarMenuWallet.toggle()
@@ -202,7 +215,7 @@ class Wallet : AppCompatActivity() {
     }
 
     private fun openDepositPopup(){
-        val positiveButtonClick = { _: DialogInterface, _: Int ->
+        val positiveButtonClick = { _: DialogInterface, _: Int -> //call a function that returns all coins selected into collected coins
             returnSelectedToWallet()
             Toast.makeText(applicationContext, "Returned to your Wallet.", Toast.LENGTH_SHORT).show()
         }
@@ -210,12 +223,12 @@ class Wallet : AppCompatActivity() {
 
         builder.setTitle("Your Deposit Box")
         val ids = Array(depositBox.size){"it = $it"}
-        for ((count, a) in depositBox.withIndex()){
+        for ((count, a) in depositBox.withIndex()){ //create entry in popup for each coin in deposit box, displaying coin id
             ids[count] = a.id
         }
         builder.setMultiChoiceItems(ids, null) { _, which, isChecked ->
             if (isChecked) {
-                returnToWallet.add(depositBox[which])
+                returnToWallet.add(depositBox[which]) //every selected item should be removed from deposit box list and added to collectedCoins
             } else if (returnToWallet.contains(depositBox[which])) {
                 returnToWallet.remove(depositBox[which])
             }
@@ -229,24 +242,24 @@ class Wallet : AppCompatActivity() {
         textViewWallet.text = "Your wallet currently contain ${collectedCoins.size} coins.\nTap a row to add it to your deposit box!"
         buttonSubCons.text = "Deposit box:\n${depositBox.size} coins."
     }
-    private fun returnSelectedToWallet(){
-        for(a in returnToWallet){
-            depositBox.remove(a)
-            collectedCoins.add(a)
+    private fun returnSelectedToWallet(){ //simple iterator to move coins over from returntoWallet<Coin> to collectedCoins
+        for(x in returnToWallet){
+            depositBox.remove(x)
+            collectedCoins.add(x)
         }
-        listView.getItemAtPosition(0)
+        listView.getItemAtPosition(0) //update the listview
         returnToWallet.clear()
         setTextViews()
     }
 
-    private fun cashInAllDeposit(){
+    private fun cashInAllDeposit(){ //funtion that iterates over all entries in deposit box and converts them to gold. Removes them from users account
         var dps: Int = depositBox.size - 1
-        if(dps == -1){
+        if(dps == -1){ //make sure that there is atleast one coin in deposit box
             toast("You must add coins to your deposit box before you can cash in!")
             return
         }
         var beatenTo = 0
-        while(dps >= 0){
+        while(dps >= 0){ //check how many of the coins to be cashed in have already been cashed in by another user
             for (b in alreadyCashed) {
                 if (b.id == depositBox[dps].id) {
                     beatenTo++
@@ -258,33 +271,48 @@ class Wallet : AppCompatActivity() {
         }
         listView.getItemAtPosition(0)
         dps = depositBox.size
-        if(beatenTo > 0){
+        if(beatenTo > 0){ //inform the player why they're not getting the full gold sum
             toast("Unfortunately, another player has already cashed $beatenTo of these Coins. I'll only cash non-duplicates.")
         }
-        if(dps>0 && todayCoins+dps <= 25){
+        if(dps>0 && todayCoins+dps <= 25){ //make sure we're cashing in a legal amount of coins
+            for(a in depositBox){ //sum the amount of gold value for each coin
+                if(a.currency == "QUID"){
+                    goldSumInDeposit += (a.value*quid)
+                }
+                if(a.currency == "DOLR"){
+                    goldSumInDeposit += (a.value*dolr)
+                }
+                if(a.currency == "SHIL"){
+                    goldSumInDeposit += (a.value*shil)
+                }
+                if(a.currency == "PENY"){
+                    goldSumInDeposit += (a.value*peny)
+                }
+            }
+            val myGSON = Gson()
+            val json = myGSON.toJson(collectedCoins)
+            mRootRef.child("users").child(userName).child("collectedCoins").setValue(json) //set collectedCoins to the new value (collectedCoins-depositBox)
+            mRootRef.child("users").child(userName).child("coinsToday").setValue(todayCoins+dps) //update the number of coins the player has cashed in today
+            depositBox.addAll(alreadyCashed) //because all the coins in deposit box have now been cashed, they should be added to the alreadycashed list online
+            mRootRef.child("days/${sdf.format(Date())}/alreadyCashedCoins").setValue(myGSON.toJson(depositBox)) //this is carried out here
+            mRootRef.child("users").child(userName).child("netWorth").setValue(goldSum+goldSumInDeposit) //update the suers net worth
+            depositBox.clear()
+            goldSumInDeposit = 0.0//update the values and clear the used data
+            setTextViews()
+        }else if(dps == 0){ //if the user was cashing in only alreadycashed coins, we just need to update the server with the coins they didn't ry to cash in
             val myGSON = Gson()
             val json = myGSON.toJson(collectedCoins)
             mRootRef.child("users").child(userName).child("collectedCoins").setValue(json)
-            mRootRef.child("users").child(userName).child("coinsToday").setValue(todayCoins+dps)
-            depositBox.addAll(alreadyCashed)
-            mRootRef.child("days/${sdf.format(Date())}/alreadyCashedCoins").setValue(myGSON.toJson(depositBox))
-            mRootRef.child("users").child(userName).child("netWorth").setValue(goldSum+goldSumInDeposit)
             depositBox.clear()
             setTextViews()
-        }else if(dps == 0){
-            val myGSON = Gson()
-            val json = myGSON.toJson(collectedCoins)
-            mRootRef.child("users").child(userName).child("collectedCoins").setValue(json)
-            depositBox.clear()
-            setTextViews()
-            toast("Looks like someone beat you to all of your coins! Unlucky!")
+            toast("Looks like someone beat you to all of your coins! Unlucky!") //mock them
         }else{
-            toast("You're trying to cash in ${todayCoins+dps-25} too many coins, please remove some from your deposit box!")
+            toast("You're trying to cash in ${todayCoins+dps-25} too many coins, please remove some from your deposit box!") //warn them that they are trying to cash in too many coins
         }
     }
 
     @SuppressLint("ResourceAsColor")
-    private fun createListView(){
+    private fun createListView(){ //used to draw the list view at initialisation time
         listView = findViewById(R.id.listViewWallet)
         listView.adapter = CoinAdapter(this, collectedCoins)
         listView.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
@@ -293,18 +321,6 @@ class Wallet : AppCompatActivity() {
                 collectedCoins.remove(x)
                 depositBox.add(x)
                 listView.getItemAtPosition(position)
-                if(x.currency == "QUID"){
-                    goldSumInDeposit += (x.value*quid)
-                }
-                if(x.currency == "DOLR"){
-                    goldSumInDeposit += (x.value*dolr)
-                }
-                if(x.currency == "SHIL"){
-                    goldSumInDeposit += (x.value*shil)
-                }
-                if(x.currency == "PENY"){
-                    goldSumInDeposit += (x.value*peny)
-                }
             }else{
                 createExpiredPopup()
 
@@ -344,7 +360,7 @@ class Wallet : AppCompatActivity() {
         builder.setTitle("Information for Wallet")
         builder.setMessage("This is your wallet. When you collect coins they end up here! You can hold as many coins as you like in your wallet, however coins expire at midnight so make sure" +
                 " you cash them in before then." +
-                "\n\nYou can cash in up to 25 coins every day, so if you collect more you'll either have to let them expire or trade them to a friend! To trade open your profile from the main menu, " +
+                "\n\nYou can cash in up to 25 coins every day, so if you collect more you'll either have to let them expire or trade them to a friend! To trade coins, open your profile from the main menu, " +
                 "or the button below.\n\nTo cash in coins you must be at the bank! It is located at the library, however you've got to be quick, as every coin may only be banked once per day. So" +
                 " if another player gets there first, you won't get any gold!" +
                 "\n\nTo remove coins from your deposit box, simply tap it!\n\nHave fun and collect fast!")
