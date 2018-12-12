@@ -152,7 +152,7 @@ class MyStore : AppCompatActivity() { //activity allowing users to buy powerups 
         builder.create()
         builder.show()
     }
-    private fun applyBankless(){
+    private fun applyBankless(){ //we basically just need to create a popup where the user can confirm or reject the powerup. This applies for the above aswell.
         val positiveButtonClick = { _: DialogInterface, _: Int ->
             if(netWorth >=1500) {
                 mRootRef.child("users/$userName/netWorth").setValue(netWorth - 1500)
