@@ -70,7 +70,7 @@ class MyStore : AppCompatActivity() { //activity allowing users to buy powerups 
                     currentBankless = p0.value.toString()
                     if(currentBankless == sdf.format(Date())){ //disable button if user has already bought the powerup today
                         nobankactivate.isEnabled = false
-                        nobankactivate.text = "Activated"
+                        nobankactivate.text = getString(R.string.activated)
                     }
                 }
             }
@@ -85,7 +85,7 @@ class MyStore : AppCompatActivity() { //activity allowing users to buy powerups 
                     currenthoover = p0.value.toString()
                     if(currenthoover == sdf.format(Date())){
                         hooveractivate.isEnabled = false
-                        hooveractivate.text = "Activated"
+                        hooveractivate.text = getString(R.string.activated)
                     }
                 }
             }
