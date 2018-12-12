@@ -118,7 +118,8 @@ class CoinzHome : AppCompatActivity() {
             sharedPrefs.setTodayGEOJSON("")
             sharedPrefs.setRates(0.toFloat(),0.toFloat(),0.toFloat(),0.toFloat())
             sharedPrefs.setToday(currentDay)
-            mRootRef.child("users/$userName/remainingCoins").setValue("")
+            mRootRef.child("users/$userName/coinsToday").setValue(0) //set the count for the coins theyve cashed today today to 0, so they can collect 25 today
+            mRootRef.child("users/$userName/remainingCoins").setValue("") //clear remaining coins
             mRootRef.child("users/$userName/collectedCoins").addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onCancelled(p0: DatabaseError) { //if a user has been traded a coin for the current day prior to logging in, they still want the coin in their wallet when they launch
                     toast("Couldn't access your data, please check your net connection.") //for the first time that day. This function allows us to pull all coins down from their wallet
@@ -194,6 +195,7 @@ class CoinzHome : AppCompatActivity() {
                     }
                 }
             })
+            mRootRef.child("users/$userName/coinsToday").setValue(0) //set the count for the coins theyve cashed today today to 0, so they can collect 25 today
             mRootRef.child("users/$userName/remainingCoins").setValue("")
             mapDownloadNotifier.text = getString(string.mapProgressTRUE) //and then notify the user that they're good to go
             mapDownloadNotifier.setTextColor(getColor(color.mapDownloadBackGroundTRUE))
