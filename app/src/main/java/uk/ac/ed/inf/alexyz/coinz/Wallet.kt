@@ -6,21 +6,18 @@ import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
-import android.widget.*
+import android.widget.AdapterView
+import android.widget.ListView
+import android.widget.Toast
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.*
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.mapbox.mapboxsdk.geometry.LatLng
 import kotlinx.android.synthetic.main.activity_wallet.*
 import org.jetbrains.anko.toast
-import com.google.firebase.auth.FirebaseAuth
-
-import com.google.firebase.database.*
-
-import com.mapbox.mapboxsdk.geometry.LatLng
-import kotlinx.android.synthetic.main.activity_my_store.*
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
-
 
 
 @SuppressLint("MissingPermission", "SetTextI18n") //very similar to Trading Screen, except implements no duplication rule and allows cashing in of multiple coins at once.
@@ -64,7 +61,7 @@ class Wallet : AppCompatActivity() {
 
     private var bankless =false
 
-    val coinType = object : TypeToken<List<Coin>>() {}.type
+    val coinType = object : TypeToken<List<Coin>>() {}.type!!
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

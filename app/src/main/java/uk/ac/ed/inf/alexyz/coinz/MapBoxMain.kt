@@ -118,18 +118,18 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
                 toast("Couldn't access your data, please check your net connection.")
             }
             override fun onDataChange(p0: DataSnapshot) {
-                if (p0.exists()){
+                collectedCoins = if (p0.exists()){
                     val myGSON = Gson() //use of Gson to convert arraylist into string for storage and transfer. Gson slaps hard
                     val json = p0.value.toString()
                     if (json != "") {
                         val coinType = object : TypeToken<List<Coin>>() {}.type
-                        collectedCoins = myGSON.fromJson(json, coinType)
+                        myGSON.fromJson(json, coinType)
                     } else {
-                        collectedCoins = arrayListOf()
+                        arrayListOf()
                     }
 
                 }else{
-                    collectedCoins = arrayListOf()
+                    arrayListOf()
                 }
                 colCoinsReady = true
                 postSetUp()
@@ -301,11 +301,6 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
         val json = myGSON.toJson(remainingCoins)
         mRootRef.child("users").child(userName).child("remainingCoins").setValue(json)
         remainingCoins.clear()
-    }
-    private fun wipeDatabase(){
-        mRootRef.child("users/$userName/collectedCoins").setValue("") //used for testing, removes all coins for the day. Also resets the date record to allow the coins to be redrawn.
-        mRootRef.child("users/$userName/remainingCoins").setValue("")
-        mRootRef.child("users/$userName/date").setValue("")
     }
 
     private fun enableLocation(){ //below are the functions required by mapbox. The spec for them is available in the mapbox api documentation
