@@ -362,7 +362,7 @@ class Wallet : AppCompatActivity() {
                 " you cash them in before then." +
                 "\n\nYou can cash in up to 25 coins every day, so if you collect more you'll either have to let them expire or trade them to a friend! To trade coins, open your profile from the main menu, " +
                 "or the button below.\n\nTo cash in coins you must be at the bank! It is located at the library, however you've got to be quick, as every coin may only be banked once per day. So" +
-                " if another player gets there first, you won't get any gold!" +
+                " if another player gets there first, you won't get any gold!\n\nBe aware that you must be at the bank in the map screen, otherwise Coinz won't know you're there!" +
                 "\n\nTo remove coins from your deposit box, simply tap it!\n\nHave fun and collect fast!")
         builder.setPositiveButton("Got it!", DialogInterface.OnClickListener(positiveButtonClick))
         builder.create()

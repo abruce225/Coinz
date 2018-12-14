@@ -251,6 +251,7 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
             counter--
         }
         remainingCoins.clear() //however all remaining coins must be cleared. let none remain.
+        setCoins()
     }
 
     private fun checkIfNear(location:LatLng){ //this function is called in the onLocationChanged method and allows us to check every coin remaining on the maps proximity to the enw location. This could be heavily optimised however I don't think this is necessary
