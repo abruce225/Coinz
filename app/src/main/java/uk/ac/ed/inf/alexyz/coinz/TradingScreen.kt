@@ -89,7 +89,7 @@ class TradingScreen : AppCompatActivity() {
                         }
                     }
                 }else{
-                    mRootRef.child("users/$userName/collectedCoins").setValue("")
+                    mRootRef.child("users/$userName/collectedCoins").setValue("[]")
                     setTextViews()
                     toast("You have no coins! Go get some!")
                 }

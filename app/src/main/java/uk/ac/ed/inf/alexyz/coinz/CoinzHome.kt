@@ -71,7 +71,7 @@ class CoinzHome : AppCompatActivity() {
             }
         })
         playButton.setOnClickListener { //group of self explanatory listeners to let the user interact with the tile interface
-            if (sharedPrefs.getTodayGEOJSON() == "" || sharedPrefs.getToday() != sdf.format(Date())){
+            if (sharedPrefs.getTodayGEOJSON() == "" || sharedPrefs.getToday() != sdf.format(Date())){ //this checks if the user has the current GeoJSON, otherwise it will try to redownload the current map
                 toast("You haven't got the map for today yet!\nRe-attempting download now.")
                 getGeoJSON()
             }else {
@@ -118,33 +118,6 @@ class CoinzHome : AppCompatActivity() {
             sharedPrefs.setTodayGEOJSON("")
             sharedPrefs.setRates(0.toFloat(),0.toFloat(),0.toFloat(),0.toFloat())
             sharedPrefs.setToday(currentDay)
-            mRootRef.child("users/$userName/coinsToday").setValue(0) //set the count for the coins theyve cashed today today to 0, so they can collect 25 today
-            mRootRef.child("users/$userName/remainingCoins").setValue("") //clear remaining coins
-            mRootRef.child("users/$userName/collectedCoins").addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onCancelled(p0: DatabaseError) { //if a user has been traded a coin for the current day prior to logging in, they still want the coin in their wallet when they launch
-                    toast("Couldn't access your data, please check your net connection.") //for the first time that day. This function allows us to pull all coins down from their wallet
-                }
-                override fun onDataChange(p0: DataSnapshot) {
-                    if (p0.exists()){
-                        val myGSON = Gson() //use Gson to parse the json we just pulled from firebase
-                        val json = p0.value.toString()
-                        if (json != "") {
-                            collectedCoins = myGSON.fromJson(json, coinType)
-                            var counter = collectedCoins.size-1 //then we iterate over them, to establish which coins are valid for today, and which remain from the day before
-                            while(counter>=0){
-                                if (collectedCoins[counter].date != currentDay){
-                                    collectedCoins.removeAt(counter)
-                                }
-                                counter--
-                            }
-                            mRootRef.child("users/$userName/collectedCoins").setValue(myGSON.toJson(collectedCoins)) // then set their collectedcoins to only the new ones that have been traded
-                        } else {
-                            mRootRef.child("users/$userName/collectedCoins").setValue("") //if collectedcoins doesn't exist, they haven't been traded anything so we just wipe
-                        }
-
-                    }
-                }
-            })
             val todaysURL = ("http://homepages.inf.ed.ac.uk/stg/coinz/$currentDay/coinzmap.geojson")//set url for geojson download
             todaysURL.httpGet().responseString { _, _, result -> //use httpGet to pull down the geojson, then parse it below. This involves adding values to shared prefs, which will then be
                 when (result) {                                  //formatted into an arraylist of coins etc in the mapbox activity
@@ -167,40 +140,8 @@ class CoinzHome : AppCompatActivity() {
                     }
                 }
             }
-            return
         }
-        if(sharedPrefs.getToday() == sdf.format(Date()) && todayDateUser != sdf.format(Date())){ //case where different user has played today on device, and new user still hasn't played yet today(on any device)
-            mRootRef.child("users/$userName/collectedCoins").addListenerForSingleValueEvent(object : ValueEventListener { //same as above, take steps to not destroy valid coins
-                override fun onCancelled(p0: DatabaseError) {
-                    toast("Couldn't access your data, please check your net connection.")
-                }
-                override fun onDataChange(p0: DataSnapshot) {
-                    if (p0.exists()){
-                        val myGSON = Gson()
-                        val json = p0.value.toString()
-                        if (json != "") {
-                            collectedCoins = myGSON.fromJson(json, coinType)
-                            var counter = collectedCoins.size-1
-                            while(counter>=0){
-                                if (collectedCoins[counter].date != currentDay){
-                                    collectedCoins.removeAt(counter)
-                                }
-                                counter--
-                            }
-                            mRootRef.child("users/$userName/collectedCoins").setValue(myGSON.toJson(collectedCoins))
-                        } else {
-                            mRootRef.child("users/$userName/collectedCoins").setValue("")
-                        }
-
-                    }
-                }
-            })
-            mRootRef.child("users/$userName/coinsToday").setValue(0) //set the count for the coins theyve cashed today today to 0, so they can collect 25 today
-            mRootRef.child("users/$userName/remainingCoins").setValue("")
-            mapDownloadNotifier.text = getString(string.mapProgressTRUE) //and then notify the user that they're good to go
-            mapDownloadNotifier.setTextColor(getColor(color.mapDownloadBackGroundTRUE))
-            return
-        } else{ //otherwise we can notify the user that the map is ready in the string at the top of the home page, and let them continue
+        else{ //otherwise we can notify the user that the map is ready in the string at the top of the home page, and let them continue
             mapDownloadNotifier.text = getString(string.mapProgressTRUE)
             mapDownloadNotifier.setTextColor(getColor(color.mapDownloadBackGroundTRUE))
             return
