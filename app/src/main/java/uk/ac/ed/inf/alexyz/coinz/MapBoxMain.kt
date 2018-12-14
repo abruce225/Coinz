@@ -136,7 +136,7 @@ class MapBoxMain : AppCompatActivity(), PermissionsListener, LocationEngineListe
             }
         })
         mRootRef.child("users/$userName/remainingCoins").addListenerForSingleValueEvent(object : ValueEventListener {//same as collected coins, this allows us to keep tabs on which coins are remaining
-            override fun onCancelled(p0: DatabaseError) {                                                             //and in turn which coins should be rendered
+            override fun onCancelled(p0: DatabaseError) {                                                             //and in turn which coins should be rendered.
                 toast("Couldn't access your data, please check your net connection.")
             }
             override fun onDataChange(p0: DataSnapshot) {
