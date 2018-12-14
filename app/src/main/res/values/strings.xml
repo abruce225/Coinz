@@ -13,8 +13,8 @@
     <string name="email">Please enter your email address.</string>
     <string name="registerCap">Welcome to Coinz!</string>
 
-    <string name="userEmail"></string>
-    <string name="userGoldSum"></string>
+    <string name="userEmail" />
+    <string name="userGoldSum" />
     <string name="netWorth">Current NET Worth: 0</string>
     <string name="remember">Remember?</string>
     <string name="title_activity_wallet">wallet</string>

@@ -1,9 +1,8 @@
 package uk.ac.ed.inf.alexyz.coinz
 
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_my_settings.*
-import org.jetbrains.anko.toast
 
 class MySettings : AppCompatActivity() {
 

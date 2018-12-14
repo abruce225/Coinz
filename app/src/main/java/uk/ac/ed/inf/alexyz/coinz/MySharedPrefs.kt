@@ -4,20 +4,20 @@ import android.content.Context
 
 class MySharedPrefs(context: Context) { //simple shared preferences manager.
 
-    val PREFERENCE_NAME = "WALLET"
-    val TODAY_DATE = "Today"
-    val CURRENT_GEOJSON = "TodayGEOJSON"
-    val RECENT_EMAIL = "RecentEmail"
-    val RECENT_PASSWORD = "RecentPass"
-    val SHIL_RATE = "shilRate"
-    val DOLR_RATE = "dolrRate"
-    val PENY_RATE = "penyRate"
-    val QUID_RATE = "quidRate"
-    val LATI = "lat"
-    val LONG = "lon"
-    val POPUP = "wantsPopup"
+    private val PREFERENCE_NAME = "WALLET"
+    private val TODAY_DATE = "Today"
+    private val CURRENT_GEOJSON = "TodayGEOJSON"
+    private val RECENT_EMAIL = "RecentEmail"
+    private val RECENT_PASSWORD = "RecentPass"
+    private val SHIL_RATE = "shilRate"
+    private val DOLR_RATE = "dolrRate"
+    private val PENY_RATE = "penyRate"
+    private val QUID_RATE = "quidRate"
+    private val LATI = "lat"
+    private val LONG = "lon"
+    private val POPUP = "wantsPopup"
 
-    val preference = context.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE)!!
+    private val preference = context.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE)!!
 
     fun setPP(b:Boolean){
         val editor = preference.edit()

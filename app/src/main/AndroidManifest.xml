@@ -36,9 +36,8 @@
             android:label="@string/title_activity_wallet"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".TradingScreen" />
-        <activity android:name=".Settings" />
         <activity android:name=".MySettings" />
-        <activity android:name=".MyStore"></activity>
+        <activity android:name=".MyStore" />
     </application>
 
 </manifest>

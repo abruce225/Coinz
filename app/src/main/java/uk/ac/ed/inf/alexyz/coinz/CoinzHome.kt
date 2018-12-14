@@ -1,30 +1,22 @@
 package uk.ac.ed.inf.alexyz.coinz
 
+
 import android.annotation.SuppressLint
 import android.content.DialogInterface
-import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
 import android.content.Intent
+import android.os.Bundle
 import android.support.v7.app.AlertDialog
-
-import kotlinx.android.synthetic.main.activity_coinz_home.*
-import java.util.*
-
+import android.support.v7.app.AppCompatActivity
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.result.Result
 import com.google.firebase.auth.FirebaseAuth
-
 import com.google.firebase.database.*
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-
-
+import kotlinx.android.synthetic.main.activity_coinz_home.*
 import org.jetbrains.anko.toast
 import org.json.JSONObject
 import uk.ac.ed.inf.alexyz.coinz.R.*
-
 import java.text.SimpleDateFormat
-import kotlin.collections.ArrayList
+import java.util.*
 
 class CoinzHome : AppCompatActivity() {
 
@@ -34,12 +26,8 @@ class CoinzHome : AppCompatActivity() {
 
     private lateinit var mRootRef: DatabaseReference
 
-    private lateinit var collectedCoins: ArrayList<Coin>
-
     @SuppressLint("SimpleDateFormat")
     private val sdf = SimpleDateFormat("yyyy/MM/dd")
-
-    private val coinType = object : TypeToken<List<Coin>>() {}.type
 
     private lateinit var userName: String
 
